@@ -1,0 +1,267 @@
+bluewhale-terminal/
+│
+├── client/                          # React Frontend (PWA)
+│   ├── public/
+│   │   ├── manifest.json            # PWA manifest
+│   │   ├── service-worker.js        # Offline support
+│   │   ├── icons/                   # App icons (192x192, 512x512)
+│   │   └── logo.svg                 # Blue whale logo
+│   │
+│   ├── src/
+│   │   ├── assets/
+│   │   │   ├── images/
+│   │   │   │   └── logo.svg
+│   │   │   └── styles/
+│   │   │       └── globals.css
+│   │   │
+│   │   ├── components/
+│   │   │   ├── common/              # Reusable UI components
+│   │   │   │   ├── Button.tsx
+│   │   │   │   ├── Input.tsx
+│   │   │   │   ├── Card.tsx
+│   │   │   │   ├── Badge.tsx
+│   │   │   │   ├── Modal.tsx
+│   │   │   │   ├── Spinner.tsx
+│   │   │   │   └── DataTable.tsx
+│   │   │   │
+│   │   │   ├── layout/              # Layout components
+│   │   │   │   ├── Sidebar.tsx
+│   │   │   │   ├── Header.tsx
+│   │   │   │   ├── MainLayout.tsx
+│   │   │   │   └── Navigation.tsx
+│   │   │   │
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginForm.tsx
+│   │   │   │   ├── RegisterForm.tsx
+│   │   │   │   └── ProtectedRoute.tsx
+│   │   │   │
+│   │   │   ├── dashboard/
+│   │   │   │   ├── MarketOverview.tsx
+│   │   │   │   ├── WatchlistSummary.tsx
+│   │   │   │   └── QuickStats.tsx
+│   │   │   │
+│   │   │   ├── screener/
+│   │   │   │   ├── ScreenerTable.tsx
+│   │   │   │   ├── ScreenerFilters.tsx
+│   │   │   │   └── ColumnSelector.tsx
+│   │   │   │
+│   │   │   ├── watchlist/
+│   │   │   │   ├── WatchlistGrid.tsx
+│   │   │   │   ├── WatchlistCard.tsx
+│   │   │   │   └── AddToWatchlist.tsx
+│   │   │   │
+│   │   │   ├── company/
+│   │   │   │   ├── CompanyProfile.tsx
+│   │   │   │   ├── FinancialChart.tsx
+│   │   │   │   ├── MetricsTable.tsx
+│   │   │   │   └── CompanyNews.tsx
+│   │   │   │
+│   │   │   ├── reports/
+│   │   │   │   ├── ReportsList.tsx
+│   │   │   │   └── ReportViewer.tsx
+│   │   │   │
+│   │   │   ├── ai-hub/
+│   │   │   │   ├── SentimentAnalyzer.tsx
+│   │   │   │   ├── ReportSummarizer.tsx
+│   │   │   │   └── DCFCalculator.tsx
+│   │   │   │
+│   │   │   └── subscription/
+│   │   │       ├── PricingCards.tsx
+│   │   │       └── CheckoutForm.tsx
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── LoginPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── ScreenerPage.tsx
+│   │   │   ├── WatchlistPage.tsx
+│   │   │   ├── CompanyPage.tsx
+│   │   │   ├── ReportsPage.tsx
+│   │   │   ├── AIHubPage.tsx
+│   │   │   ├── SubscriptionPage.tsx
+│   │   │   └── NotFoundPage.tsx
+│   │   │
+│   │   ├── hooks/                   # Custom React hooks
+│   │   │   ├── useAuth.ts
+│   │   │   ├── useCompanies.ts
+│   │   │   ├── useWatchlist.ts
+│   │   │   ├── useScreener.ts
+│   │   │   ├── useWebSocket.ts      # Real-time data
+│   │   │   └── useLocalStorage.ts
+│   │   │
+│   │   ├── services/                # API communication
+│   │   │   ├── api.ts               # Axios instance
+│   │   │   ├── auth.service.ts
+│   │   │   ├── companies.service.ts
+│   │   │   ├── watchlist.service.ts
+│   │   │   ├── reports.service.ts
+│   │   │   └── ai.service.ts
+│   │   │
+│   │   ├── store/                   # State management (Redux Toolkit)
+│   │   │   ├── store.ts
+│   │   │   ├── slices/
+│   │   │   │   ├── authSlice.ts
+│   │   │   │   ├── companiesSlice.ts
+│   │   │   │   ├── watchlistSlice.ts
+│   │   │   │   └── uiSlice.ts
+│   │   │   └── hooks.ts             # Typed Redux hooks
+│   │   │
+│   │   ├── types/                   # TypeScript definitions
+│   │   │   ├── api.types.ts
+│   │   │   ├── company.types.ts
+│   │   │   ├── user.types.ts
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── utils/                   # Helper functions
+│   │   │   ├── formatters.ts        # Currency, numbers, dates
+│   │   │   ├── validators.ts
+│   │   │   ├── calculations.ts      # Financial calculations
+│   │   │   └── constants.ts
+│   │   │
+│   │   ├── config/
+│   │   │   ├── routes.ts            # Route constants
+│   │   │   └── api.config.ts        # API endpoints
+│   │   │
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── vite-env.d.ts
+│   │
+│   ├── .env.example
+│   ├── .env.local
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   └── README.md
+│
+├── server/                          # Node.js Backend
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── database.ts          # Prisma client
+│   │   │   ├── env.ts               # Environment variables
+│   │   │   ├── redis.ts             # Cache config
+│   │   │   └── logger.ts            # Winston logger
+│   │   │
+│   │   ├── middleware/
+│   │   │   ├── auth.middleware.ts   # JWT verification
+│   │   │   ├── validate.middleware.ts # Request validation
+│   │   │   ├── rateLimiter.middleware.ts
+│   │   │   ├── errorHandler.middleware.ts
+│   │   │   └── subscription.middleware.ts # Tier checks
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── index.ts             # Route aggregator
+│   │   │   ├── auth.routes.ts       # /api/v1/auth
+│   │   │   ├── companies.routes.ts  # /api/v1/companies
+│   │   │   ├── screener.routes.ts   # /api/v1/screener
+│   │   │   ├── watchlist.routes.ts  # /api/v1/watchlist
+│   │   │   ├── reports.routes.ts    # /api/v1/reports
+│   │   │   ├── ai.routes.ts         # /api/v1/ai
+│   │   │   ├── users.routes.ts      # /api/v1/users
+│   │   │   └── subscription.routes.ts
+│   │   │
+│   │   ├── controllers/             # Request handlers
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── companies.controller.ts
+│   │   │   ├── screener.controller.ts
+│   │   │   ├── watchlist.controller.ts
+│   │   │   ├── reports.controller.ts
+│   │   │   └── ai.controller.ts
+│   │   │
+│   │   ├── services/                # Business logic
+│   │   │   ├── auth.service.ts
+│   │   │   ├── companies.service.ts
+│   │   │   ├── screener.service.ts
+│   │   │   ├── watchlist.service.ts
+│   │   │   ├── reports.service.ts
+│   │   │   ├── ai.service.ts        # OpenAI integration
+│   │   │   ├── email.service.ts     # Transactional emails
+│   │   │   └── stripe.service.ts    # Payment processing
+│   │   │
+│   │   ├── scrapers/                # Data collection
+│   │   │   ├── base.scraper.ts      # Abstract scraper class
+│   │   │   ├── jse.scraper.ts       # JSE website scraper
+│   │   │   ├── company.scraper.ts   # Individual company sites
+│   │   │   ├── news.scraper.ts      # News aggregation
+│   │   │   └── queue/
+│   │   │       ├── scraper.queue.ts # Bull queue
+│   │   │       └── workers/
+│   │   │           ├── company.worker.ts
+│   │   │           └── news.worker.ts
+│   │   │
+│   │   ├── validators/              # Request schemas (Zod)
+│   │   │   ├── auth.validators.ts
+│   │   │   ├── company.validators.ts
+│   │   │   └── screener.validators.ts
+│   │   │
+│   │   ├── types/
+│   │   │   ├── express.d.ts         # Extended Express types
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── jwt.utils.ts
+│   │   │   ├── hash.utils.ts
+│   │   │   ├── response.utils.ts    # Standardized responses
+│   │   │   └── calculations.utils.ts # Financial formulas
+│   │   │
+│   │   ├── jobs/                    # Scheduled tasks
+│   │   │   ├── updatePrices.job.ts  # Market data refresh
+│   │   │   ├── processReports.job.ts
+│   │   │   └── cleanupOldData.job.ts
+│   │   │
+│   │   ├── app.ts                   # Express app setup
+│   │   └── server.ts                # Server entry point
+│   │
+│   ├── prisma/
+│   │   ├── schema.prisma            # Database schema
+│   │   ├── migrations/              # Migration history
+│   │   └── seed.ts                  # Database seeding
+│   │
+│   ├── tests/
+│   │   ├── unit/
+│   │   │   ├── services/
+│   │   │   └── utils/
+│   │   ├── integration/
+│   │   │   ├── auth.test.ts
+│   │   │   ├── companies.test.ts
+│   │   │   └── screener.test.ts
+│   │   └── setup.ts
+│   │
+│   ├── .env.example
+│   ├── .env
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── jest.config.js
+│   └── README.md
+│
+├── shared/                          # Shared types/utils (optional)
+│   ├── types/
+│   │   └── common.types.ts
+│   └── constants.ts
+│
+├── docs/
+│   ├── API.md                       # API documentation
+│   ├── DEPLOYMENT.md
+│   ├── SCRAPING.md
+│   └── ARCHITECTURE.md
+│
+├── scripts/
+│   ├── seed-companies.ts            # Initial JSE data load
+│   ├── update-logos.ts              # Fetch company logos
+│   └── backup-db.sh
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                   # GitHub Actions CI/CD
+│       └── deploy.yml
+│
+├── .gitignore
+├── .env.example
+├── docker-compose.yml               # Local dev environment
+├── Dockerfile.client
+├── Dockerfile.server
+├── package.json                     # Root package.json (workspaces)
+├── turbo.json                       # Turborepo config (optional)
+└── README.md
+
+
