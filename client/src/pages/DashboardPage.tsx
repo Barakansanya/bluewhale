@@ -1,5 +1,6 @@
 // FILE: client/src/pages/DashboardPage.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Filter, 
@@ -18,8 +19,15 @@ import {
 } from 'lucide-react';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -65,7 +73,13 @@ export default function DashboardPage() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  if (item.id === 'screener') {
+                    navigate('/screener');
+                  } else {
+                    setActiveTab(item.id);
+                  }
+                }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                   activeTab === item.id
                     ? 'bg-cyan-500/20 text-cyan-400'
@@ -80,7 +94,10 @@ export default function DashboardPage() {
         </nav>
 
         <div className="p-4 border-t border-slate-800">
-          <button className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition`}>
+          <button 
+            onClick={handleLogout}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition`}
+          >
             <LogOut className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="font-medium">Logout</span>}
           </button>
@@ -224,9 +241,11 @@ export default function DashboardPage() {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  {navItems.find(item => item.id === activeTab)?.icon && 
-                    React.createElement(navItems.find(item => item.id === activeTab)!.icon, { className: 'w-8 h-8 text-cyan-400' })
-                  }
+                  {(() => {
+                    const item = navItems.find(item => item.id === activeTab);
+                    const Icon = item?.icon;
+                    return Icon ? <Icon className="w-8 h-8 text-cyan-400" /> : null;
+                  })()}
                 </div>
                 <h3 className="text-2xl font-bold mb-2">{navItems.find(item => item.id === activeTab)?.label}</h3>
                 <p className="text-slate-400">This section is under development</p>

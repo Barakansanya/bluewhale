@@ -21,13 +21,30 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Form submitted:', formData);
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/auth/' + (isLogin ? 'login' : 'register'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
+        navigate('/dashboard');
+      } else {
+        setError(data.error || 'Authentication failed');
+      }
+    } catch (err: any) {
+      setError('Network error. Please try again.');
+      console.error('Auth error:', err);
+    } finally {
       setLoading(false);
-      // Navigate to dashboard
-      navigate('/dashboard');
-    }, 1000);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

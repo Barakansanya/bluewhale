@@ -2,7 +2,6 @@
 // FILE: client/src/services/auth.service.ts
 // ============================================
 import { api } from './api';
-import { AuthResponse, User } from '../types';
 
 interface LoginCredentials {
   email: string;
@@ -14,6 +13,15 @@ interface RegisterData extends LoginCredentials {
   lastName?: string;
   company?: string;
   jobTitle?: string;
+}
+
+interface AuthResponse {
+  success: boolean;
+  data: {
+    user: any;
+    token: string;
+  };
+  message?: string;
 }
 
 export const authService = {
@@ -35,8 +43,8 @@ export const authService = {
     return response.data;
   },
 
-  async getProfile(): Promise<User> {
-    const response = await api.get<{ data: User }>('/auth/profile');
+  async getProfile(): Promise<any> {
+    const response = await api.get('/auth/profile');
     return response.data.data;
   },
 
@@ -46,7 +54,7 @@ export const authService = {
     window.location.href = '/login';
   },
 
-  getCurrentUser(): User | null {
+  getCurrentUser(): any | null {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   },
@@ -54,4 +62,63 @@ export const authService = {
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   },
+};
+
+// ============================================
+// FILE: client/src/hooks/useAuth.ts
+// ============================================
+import { useState } from 'react';
+import { authService } from '../services/auth.service';
+
+export const useAuth = () => {
+  const [user, setUser] = useState<any | null>(authService.getCurrentUser());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authService.login({ email, password });
+      setUser(response.data.user);
+      return response;
+    } catch (err: any) {
+      const message = err.response?.data?.error || 'Login failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (data: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authService.register(data);
+      setUser(response.data.user);
+      return response;
+    } catch (err: any) {
+      const message = err.response?.data?.error || 'Registration failed';
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    authService.logout();
+    setUser(null);
+  };
+
+  return {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    isAuthenticated: !!user,
+  };
 };

@@ -1,7 +1,7 @@
 // ============================================
 // FILE: client/src/services/api.ts
 // ============================================
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
@@ -27,7 +27,7 @@ api.interceptors.request.use(
 // Response interceptor - handle errors
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiErrorResponse>) => {
+  (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -36,8 +36,3 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-interface ApiErrorResponse {
-  success: false;
-  error: string;
-}

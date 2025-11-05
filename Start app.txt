@@ -4,11 +4,20 @@ sudo service postgresql restart
 # Backend setup
 cd server
 npm install
-npx prisma generate
 npx prisma migrate dev --name init
+npx prisma generate
+npm run prisma:seed
 npm run dev
 
 # Frontend setup (new terminal)
 cd ../client
 npm install
 npm run dev
+
+NEXT ON LIST
+Everything looks great!Just one thing below:
+-> Bloomberg-style persistent sidebar is not consistent on desktop mode, please rectify this issue. 
+  In addition add elegance to it with some smooth animations on scroll,transitions to give it the feel and Jobs WOW effect consistently through out the App.
+  Otherwise, build the Watchlist Page where users can see all their saved companies.
+ 
+ 

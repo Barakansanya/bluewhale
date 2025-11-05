@@ -3,10 +3,9 @@
 // ============================================
 import { useState, useEffect } from 'react';
 import { authService } from '../services/auth.service';
-import { User } from '../types';
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(authService.getCurrentUser());
+  const [user, setUser] = useState<any | null>(authService.getCurrentUser());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,16 +46,6 @@ export const useAuth = () => {
     setUser(null);
   };
 
-  const refreshProfile = async () => {
-    try {
-      const profile = await authService.getProfile();
-      setUser(profile);
-      localStorage.setItem('user', JSON.stringify(profile));
-    } catch (err) {
-      console.error('Failed to refresh profile:', err);
-    }
-  };
-
   return {
     user,
     loading,
@@ -64,7 +53,6 @@ export const useAuth = () => {
     login,
     register,
     logout,
-    refreshProfile,
     isAuthenticated: !!user,
   };
 };
