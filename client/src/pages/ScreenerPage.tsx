@@ -1,5 +1,6 @@
 // FILE: client/src/pages/ScreenerPage.tsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import { 
   ArrowUpDown, 
@@ -23,11 +24,11 @@ interface Company {
     pbRatio: number;
     dividendYield: number;
     roe: number;
-    debtToEquity: number;
   } | null;
 }
 
 export default function ScreenerPage() {
+  const navigate = useNavigate();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortField, setSortField] = useState('marketCap');
@@ -50,12 +51,9 @@ export default function ScreenerPage() {
       const data = await response.json();
       if (data.success) {
         alert('Added to watchlist!');
-      } else {
-        alert(data.error || 'Failed to add to watchlist');
       }
     } catch (error) {
       console.error('Error adding to watchlist:', error);
-      alert('Failed to add to watchlist');
     }
   };
 
@@ -76,21 +74,16 @@ export default function ScreenerPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Convert string numbers back to numbers
         const formattedCompanies = data.data.companies.map((company: any) => ({
           ...company,
           marketCap: Number(company.marketCap),
           lastPrice: Number(company.lastPrice),
-          priceChange: Number(company.priceChange),
           priceChangePercent: Number(company.priceChangePercent),
-          volume: Number(company.volume),
           metrics: company.metrics ? {
-            ...company.metrics,
-            peRatio: company.metrics.peRatio ? Number(company.metrics.peRatio) : null,
-            pbRatio: company.metrics.pbRatio ? Number(company.metrics.pbRatio) : null,
-            dividendYield: company.metrics.dividendYield ? Number(company.metrics.dividendYield) : null,
-            roe: company.metrics.roe ? Number(company.metrics.roe) : null,
-            debtToEquity: company.metrics.debtToEquity ? Number(company.metrics.debtToEquity) : null,
+            peRatio: Number(company.metrics.peRatio),
+            pbRatio: Number(company.metrics.pbRatio),
+            dividendYield: Number(company.metrics.dividendYield),
+            roe: Number(company.metrics.roe),
           } : null,
         }));
         setCompanies(formattedCompanies);
@@ -112,17 +105,9 @@ export default function ScreenerPage() {
   };
 
   const formatCurrency = (value: number) => {
-    if (value >= 1000000000) {
-      return `R${(value / 1000000000).toFixed(2)}B`;
-    }
-    if (value >= 1000000) {
-      return `R${(value / 1000000).toFixed(2)}M`;
-    }
+    if (value >= 1000000000) return `R${(value / 1000000000).toFixed(2)}B`;
+    if (value >= 1000000) return `R${(value / 1000000).toFixed(2)}M`;
     return `R${value.toFixed(2)}`;
-  };
-
-  const formatNumber = (value: number | null, decimals = 2) => {
-    return value !== null ? value.toFixed(decimals) : 'N/A';
   };
 
   const getSortIcon = (field: string) => {
@@ -137,217 +122,131 @@ export default function ScreenerPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">JSE Small-Cap Screener</h1>
-          <p className="text-slate-400">Filter and analyze South African equity markets</p>
-        </div>
-
-        {/* Filters Bar */}
-        <div className="bg-slate-900 rounded-xl p-4 mb-6 border border-slate-800">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search by name or ticker..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-              />
-            </div>
-
-            {/* Sector Filter */}
-            <select
-              value={sectorFilter}
-              onChange={(e) => setSectorFilter(e.target.value)}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            >
-              <option value="">All Sectors</option>
-              <option value="FINANCIALS">Financials</option>
-              <option value="MATERIALS">Materials</option>
-              <option value="ENERGY">Energy</option>
-              <option value="HEALTHCARE">Healthcare</option>
-              <option value="CONSUMER_GOODS">Consumer Goods</option>
-              <option value="TECHNOLOGY">Technology</option>
-              <option value="TELECOMMUNICATIONS">Telecommunications</option>
-              <option value="INDUSTRIALS">Industrials</option>
-            </select>
-
-            {/* Export Button */}
-            <button className="flex items-center justify-center space-x-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition">
-              <Download className="w-4 h-4" />
-              <span>Export CSV</span>
-            </button>
+    <MainLayout>
+      <div className="p-4 md:p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2">JSE Small-Cap Screener</h1>
+            <p className="text-slate-400">Filter and analyze South African equity markets</p>
           </div>
-        </div>
 
-        {/* Results Count */}
-        <div className="mb-4 text-slate-400 text-sm">
-          Showing {filteredCompanies.length} companies
-        </div>
+          <div className="bg-slate-900 rounded-xl p-4 mb-6 border border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="relative">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name or ticker..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
 
-        {/* Screener Table */}
-        <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+              <select
+                value={sectorFilter}
+                onChange={(e) => setSectorFilter(e.target.value)}
+                className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              >
+                <option value="">All Sectors</option>
+                <option value="FINANCIALS">Financials</option>
+                <option value="MATERIALS">Materials</option>
+                <option value="ENERGY">Energy</option>
+                <option value="HEALTHCARE">Healthcare</option>
+                <option value="CONSUMER_GOODS">Consumer Goods</option>
+                <option value="TECHNOLOGY">Technology</option>
+                <option value="TELECOMMUNICATIONS">Telecommunications</option>
+              </select>
+
+              <button className="flex items-center justify-center space-x-2 bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg transition">
+                <Download className="w-4 h-4" />
+                <span>Export CSV</span>
+              </button>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-800 border-b border-slate-700">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      <button
-                        onClick={() => handleSort('ticker')}
-                        className="flex items-center space-x-1 hover:text-white transition"
+          </div>
+
+          <div className="mb-4 text-slate-400 text-sm">
+            Showing {filteredCompanies.length} companies
+          </div>
+
+          <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-800 border-b border-slate-700">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase">
+                        <button onClick={() => handleSort('ticker')} className="flex items-center space-x-1">
+                          <span>Ticker</span>
+                          {getSortIcon('ticker')}
+                        </button>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase">Company</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase">Sector</th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase">Price</th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase">Change %</th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase">
+                        <button onClick={() => handleSort('marketCap')} className="flex items-center justify-end space-x-1 ml-auto">
+                          <span>Market Cap</span>
+                          {getSortIcon('marketCap')}
+                        </button>
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase">P/E</th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase">Div Yield</th>
+                      <th className="px-6 py-4 text-center text-xs font-medium text-slate-300 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {filteredCompanies.map((company) => (
+                      <tr
+                        key={company.id}
+                        onClick={() => navigate(`/company/${company.ticker}`)}
+                        className="hover:bg-slate-800/50 transition cursor-pointer"
                       >
-                        <span>Ticker</span>
-                        {getSortIcon('ticker')}
-                      </button>
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      <button
-                        onClick={() => handleSort('name')}
-                        className="flex items-center space-x-1 hover:text-white transition"
-                      >
-                        <span>Company</span>
-                        {getSortIcon('name')}
-                      </button>
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      Sector
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      <button
-                        onClick={() => handleSort('lastPrice')}
-                        className="flex items-center justify-end space-x-1 hover:text-white transition ml-auto"
-                      >
-                        <span>Price</span>
-                        {getSortIcon('lastPrice')}
-                      </button>
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      Change %
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      <button
-                        onClick={() => handleSort('marketCap')}
-                        className="flex items-center justify-end space-x-1 hover:text-white transition ml-auto"
-                      >
-                        <span>Market Cap</span>
-                        {getSortIcon('marketCap')}
-                      </button>
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      P/E
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      P/B
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      Div Yield
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      ROE
-                    </th>
-                    <th className="px-6 py-4 text-center text-xs font-medium text-slate-300 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {filteredCompanies.map((company) => (
-                    <tr
-                      key={company.id}
-                      className="hover:bg-slate-800/50 transition cursor-pointer"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center font-bold text-sm mr-3">
+                        <td className="px-6 py-4">
+                          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">
                             {company.ticker}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium">{company.name}</div>
-                        <div className="text-xs text-slate-400">{company.ticker}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs rounded-full bg-slate-700 text-slate-300">
-                          {company.sector.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
-                        R {company.lastPrice.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <span className={`font-medium ${company.priceChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {company.priceChangePercent >= 0 ? '+' : ''}{company.priceChangePercent.toFixed(2)}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        {formatCurrency(company.marketCap)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-slate-300">
-                        {company.metrics?.peRatio ? formatNumber(company.metrics.peRatio, 1) : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-slate-300">
-                        {company.metrics?.pbRatio ? formatNumber(company.metrics.pbRatio, 1) : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-slate-300">
-                        {company.metrics?.dividendYield ? formatNumber(company.metrics.dividendYield, 1) + '%' : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-slate-300">
-                        {company.metrics?.roe ? formatNumber(company.metrics.roe, 1) + '%' : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => addToWatchlist(company.id)}
-                          className="p-2 hover:bg-cyan-500/20 rounded-lg transition group"
-                          title="Add to watchlist"
-                        >
-                          <Star className="w-5 h-5 text-slate-400 group-hover:text-cyan-400 group-hover:fill-cyan-400 transition" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Stats Summary */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <p className="text-slate-400 text-sm mb-1">Total Companies</p>
-            <p className="text-2xl font-bold">{filteredCompanies.length}</p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <p className="text-slate-400 text-sm mb-1">Avg P/E Ratio</p>
-            <p className="text-2xl font-bold">
-              {(filteredCompanies.reduce((sum, c) => sum + (c.metrics?.peRatio || 0), 0) / filteredCompanies.length).toFixed(1)}
-            </p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <p className="text-slate-400 text-sm mb-1">Avg Div Yield</p>
-            <p className="text-2xl font-bold">
-              {(filteredCompanies.reduce((sum, c) => sum + (c.metrics?.dividendYield || 0), 0) / filteredCompanies.length).toFixed(1)}%
-            </p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-            <p className="text-slate-400 text-sm mb-1">Gainers Today</p>
-            <p className="text-2xl font-bold text-green-400">
-              {filteredCompanies.filter(c => c.priceChangePercent > 0).length}
-            </p>
+                        </td>
+                        <td className="px-6 py-4">{company.name}</td>
+                        <td className="px-6 py-4">
+                          <span className="px-2 py-1 text-xs rounded-full bg-slate-700 text-slate-300">
+                            {company.sector.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-medium">R {company.lastPrice.toFixed(2)}</td>
+                        <td className="px-6 py-4 text-right">
+                          <span className={`font-medium ${company.priceChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {company.priceChangePercent >= 0 ? '+' : ''}{company.priceChangePercent.toFixed(2)}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">{formatCurrency(company.marketCap)}</td>
+                        <td className="px-6 py-4 text-right">{company.metrics?.peRatio?.toFixed(1) || 'N/A'}</td>
+                        <td className="px-6 py-4 text-right">{company.metrics?.dividendYield?.toFixed(1) || 'N/A'}%</td>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToWatchlist(company.id);
+                            }}
+                            className="p-2 hover:bg-cyan-500/20 rounded-lg transition"
+                          >
+                            <Star className="w-5 h-5 text-slate-400 hover:text-cyan-400" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }

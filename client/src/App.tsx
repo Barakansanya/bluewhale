@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ScreenerPage from './pages/ScreenerPage';
+import WatchlistPage from './pages/WatchlistPage';
+import CompanyProfilePage from './pages/CompanyProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Create React Query client
@@ -38,8 +40,24 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route
+            path="/watchlist"
+            element={
+              <ProtectedRoute>
+                <WatchlistPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/company/:ticker"
+            element={
+              <ProtectedRoute>
+                <CompanyProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
     </QueryClientProvider>
