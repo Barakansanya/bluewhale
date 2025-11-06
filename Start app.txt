@@ -14,10 +14,21 @@ cd ../client
 npm install
 npm run dev
 
+#Github 
+# 1. Make changes to your code...
+# 2. Add the changes to be committed
+     git add .
+# 3. Commit the changes with a clear message
+     git commit -m "feat: describe what you changed"
+# 4. Push the changes to GitHub
+     git push
+
 NEXT ON LIST
-Everything looks great!Just one thing below:
--> Bloomberg-style persistent sidebar is not consistent on desktop mode, please rectify this issue. 
-  In addition add elegance to it with some smooth animations on scroll,transitions to give it the feel and Jobs WOW effect consistently through out the App.
-  Otherwise, build the Watchlist Page where users can see all their saved companies.
+Perfect! All works like a charm:)Yaay! Now let's clean out the UI/UX design, Starting from the login page all the way through the app.
+Meaning elevate the login page to match the WOW effect app theme as well. One more thing, the logo is not accurate at all please see the attached image to refresh your memory.
+Apply the fresh logo accurately to the app where necessary. Do that with precision like Jobs,Torvald and Musk sharpnesses combined.Impress them!
+Finish this quick hardle the best be prepared for "Real data Integration".
+
+Once done, the Data Scrapper implementation
  
  
