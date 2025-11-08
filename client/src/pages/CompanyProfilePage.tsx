@@ -3,90 +3,91 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import { 
-  ArrowLeft,
+  ArrowLeft, 
   TrendingUp, 
   TrendingDown,
   Star,
-  ExternalLink,
-  Building2,
-  Calendar,
   DollarSign,
-  BarChart3,
-  PieChart,
   Activity,
-  Info,
-  Globe
+  BarChart3,
+  Calendar
 } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Area,
+  AreaChart
+} from 'recharts';
 
-interface Company {
+interface CompanyData {
   id: string;
   ticker: string;
   name: string;
   sector: string;
-  industry: string;
   description: string;
-  website: string;
   marketCap: number;
   lastPrice: number;
-  priceChange: number;
   priceChangePercent: number;
   volume: number;
-  metrics: {
-    peRatio: number;
-    pbRatio: number;
-    dividendYield: number;
-    roe: number;
-    roa: number;
-    grossMargin: number;
-    operatingMargin: number;
-    netMargin: number;
-    currentRatio: number;
-    debtToEquity: number;
-  };
+  metrics: any;
+  historicalPrices?: Array<{
+    date: string;
+    close: number;
+    volume: number;
+  }>;
 }
 
 export default function CompanyProfilePage() {
-  const { ticker } = useParams();
+  const { ticker } = useParams<{ ticker: string }>();
   const navigate = useNavigate();
-  const [company, setCompany] = useState<Company | null>(null);
+  const [company, setCompany] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [chartPeriod, setChartPeriod] = useState('1Y');
 
   useEffect(() => {
-    if (ticker) {
-      fetchCompany(ticker);
-    }
+    fetchCompanyData();
   }, [ticker]);
 
-  const fetchCompany = async (ticker: string) => {
-    setLoading(true);
+  const fetchCompanyData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/v1/companies/ticker/${ticker}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/v1/companies/ticker/${ticker}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await response.json();
-
       if (data.success) {
+        // Handle metrics - could be object or array
         const companyData = data.data;
-        setCompany({
-          ...companyData,
-          marketCap: Number(companyData.marketCap),
-          lastPrice: Number(companyData.lastPrice),
-          priceChange: Number(companyData.priceChange),
-          priceChangePercent: Number(companyData.priceChangePercent),
-          volume: Number(companyData.volume),
-          metrics: companyData.metrics[0] ? {
-            peRatio: Number(companyData.metrics[0].peRatio),
-            pbRatio: Number(companyData.metrics[0].pbRatio),
-            dividendYield: Number(companyData.metrics[0].dividendYield),
-            roe: Number(companyData.metrics[0].roe),
-            roa: Number(companyData.metrics[0].roa),
-            grossMargin: Number(companyData.metrics[0].grossMargin),
-            operatingMargin: Number(companyData.metrics[0].operatingMargin),
-            netMargin: Number(companyData.metrics[0].netMargin),
-            currentRatio: Number(companyData.metrics[0].currentRatio),
-            debtToEquity: Number(companyData.metrics[0].debtToEquity),
-          } : null,
-        });
+        if (Array.isArray(companyData.metrics)) {
+          companyData.metrics = companyData.metrics[0] || null;
+        }
+        
+        // Convert Decimal/string values to numbers
+        companyData.lastPrice = Number(companyData.lastPrice);
+        companyData.priceChangePercent = Number(companyData.priceChangePercent);
+        companyData.marketCap = Number(companyData.marketCap);
+        companyData.volume = Number(companyData.volume);
+        
+        // Convert metrics to numbers
+        if (companyData.metrics) {
+          Object.keys(companyData.metrics).forEach(key => {
+            if (typeof companyData.metrics[key] === 'string' || typeof companyData.metrics[key] === 'object') {
+              companyData.metrics[key] = Number(companyData.metrics[key]);
+            }
+          });
+        }
+        
+        setCompany(companyData);
       }
     } catch (error) {
       console.error('Failed to fetch company:', error);
@@ -96,6 +97,7 @@ export default function CompanyProfilePage() {
   };
 
   const addToWatchlist = async () => {
+    if (!company) return;
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/v1/watchlist/items', {
@@ -104,42 +106,34 @@ export default function CompanyProfilePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ companyId: company?.id }),
+        body: JSON.stringify({ companyId: company.id }),
       });
-
       const data = await response.json();
       if (data.success) {
-        setIsInWatchlist(true);
         alert('Added to watchlist!');
       }
     } catch (error) {
-      console.error('Error adding to watchlist:', error);
+      console.error('Error:', error);
     }
   };
 
   const formatCurrency = (value: number) => {
-    if (value >= 1000000000) {
-      return `R${(value / 1000000000).toFixed(2)}B`;
-    }
-    if (value >= 1000000) {
-      return `R${(value / 1000000).toFixed(2)}M`;
-    }
+    if (value >= 1000000000) return `R${(value / 1000000000).toFixed(2)}B`;
+    if (value >= 1000000) return `R${(value / 1000000).toFixed(2)}M`;
     return `R${value.toFixed(2)}`;
   };
 
-  const formatNumber = (value: number | null, suffix = '') => {
-    if (value === null) return 'N/A';
-    return `${value.toFixed(2)}${suffix}`;
+  const formatVolume = (value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(2)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(2)}K`;
+    return value.toString();
   };
 
   if (loading) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-            <p className="text-slate-400">Loading company data...</p>
-          </div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-500"></div>
         </div>
       </MainLayout>
     );
@@ -148,232 +142,295 @@ export default function CompanyProfilePage() {
   if (!company) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-center">
-            <Building2 className="w-16 h-16 text-slate-700 mx-auto mb-4" />
-            <h3 className="text-xl font-bold mb-2">Company not found</h3>
-            <button
-              onClick={() => navigate('/screener')}
-              className="text-cyan-400 hover:text-cyan-300"
-            >
-              Back to Screener
-            </button>
-          </div>
+        <div className="flex flex-col items-center justify-center h-screen">
+          <p className="text-xl text-slate-400 mb-4">Company not found</p>
+          <button onClick={() => navigate('/screener')} className="text-cyan-500 hover:text-cyan-400">
+            Back to Screener
+          </button>
         </div>
       </MainLayout>
     );
   }
 
-  const isPositive = company.priceChangePercent >= 0;
+  const chartData = company.historicalPrices?.map(price => ({
+    date: new Date(price.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    price: Number(price.close),
+    volume: Number(price.volume)
+  })) || [];
+
+  const priceChange = company.priceChangePercent >= 0;
 
   return (
     <MainLayout>
-      <div className="p-4 md:p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center space-x-2 text-slate-400 hover:text-white mb-6 transition-colors group"
-          >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span>Back</span>
-          </button>
+      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center space-x-2 text-slate-400 hover:text-white mb-6 transition group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span>Back</span>
+        </button>
 
-          {/* Company Header */}
-          <div className="bg-gradient-to-r from-slate-900 to-slate-900/50 border border-slate-800 rounded-2xl p-6 mb-6 animate-fadeIn">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-2xl shadow-cyan-500/30">
-                  {company.ticker}
-                </div>
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold mb-2">{company.name}</h1>
-                  <div className="flex flex-wrap items-center gap-3 text-sm">
-                    <span className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-lg font-medium">
-                      {company.ticker}
-                    </span>
-                    <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg">
-                      {company.sector.replace('_', ' ')}
-                    </span>
-                    <span className="text-slate-400">{company.industry}</span>
-                    {company.website && (
-                      <a
-                        href={company.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 transition-colors"
-                      >
-                        <Globe className="w-4 h-4" />
-                        <span>Website</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-                </div>
+        {/* Company Header */}
+        <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-6 mb-6 border border-slate-700 shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
+            <div className="flex items-start space-x-4 mb-4 md:mb-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg animate-fade-in">
+                {company.ticker}
               </div>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 animate-slide-up">{company.name}</h1>
+                <p className="text-slate-400 animate-slide-up" style={{ animationDelay: '100ms' }}>
+                  {company.sector.replace(/_/g, ' ')}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={addToWatchlist}
+              className="flex items-center space-x-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition transform hover:scale-105 shadow-lg hover:shadow-cyan-500/50"
+            >
+              <Star className="w-5 h-5" />
+              <span>Add to Watchlist</span>
+            </button>
+          </div>
 
-              <div className="flex flex-col items-end space-y-3">
-                <div className="text-right">
-                  <p className="text-sm text-slate-400 mb-1">Current Price</p>
-                  <div className="flex items-center space-x-3">
-                    <p className="text-4xl font-bold">R{company.lastPrice.toFixed(2)}</p>
-                    <div className={`flex items-center space-x-1 px-3 py-2 rounded-xl ${
-                      isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                    }`}>
-                      {isPositive ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                      <span className="font-bold">
-                        {isPositive ? '+' : ''}{company.priceChangePercent.toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
+          {/* Price Info */}
+          <div className="flex flex-col md:flex-row md:items-end md:space-x-8">
+            <div className="mb-4 md:mb-0">
+              <p className="text-slate-400 text-sm mb-1">Current Price</p>
+              <div className="flex items-baseline space-x-3">
+                <span className="text-4xl font-bold">R {company.lastPrice.toFixed(2)}</span>
+                <span className={`flex items-center space-x-1 text-lg font-semibold ${priceChange ? 'text-green-400' : 'text-red-400'}`}>
+                  {priceChange ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                  <span>{priceChange ? '+' : ''}{company.priceChangePercent.toFixed(2)}%</span>
+                </span>
+              </div>
+            </div>
 
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Market Cap</p>
+                <p className="text-lg font-semibold">{formatCurrency(company.marketCap)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Volume</p>
+                <p className="text-lg font-semibold">{formatVolume(company.volume)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs mb-1">P/E Ratio</p>
+                <p className="text-lg font-semibold">{company.metrics?.peRatio?.toFixed(2) || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs mb-1">Div Yield</p>
+                <p className="text-lg font-semibold">{company.metrics?.dividendYield?.toFixed(2) || 'N/A'}%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Price Chart */}
+        <div className="bg-slate-900 rounded-2xl p-6 mb-6 border border-slate-800 shadow-xl animate-slide-up">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold flex items-center space-x-2">
+              <Activity className="w-6 h-6 text-cyan-500" />
+              <span>Price Chart</span>
+            </h2>
+            <div className="flex space-x-2">
+              {['1M', '3M', '6M', '1Y', 'ALL'].map((period) => (
                 <button
-                  onClick={addToWatchlist}
-                  disabled={isInWatchlist}
-                  className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 active:scale-95 ${
-                    isInWatchlist
-                      ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 shadow-lg hover:shadow-cyan-500/50'
+                  key={period}
+                  onClick={() => setChartPeriod(period)}
+                  className={`px-3 py-1 rounded-lg text-sm transition ${
+                    chartPeriod === period 
+                      ? 'bg-cyan-500 text-white' 
+                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                   }`}
                 >
-                  <Star className={`w-5 h-5 ${isInWatchlist ? '' : 'group-hover:fill-current'}`} />
-                  <span>{isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}</span>
+                  {period}
                 </button>
+              ))}
+            </div>
+          </div>
+
+          {chartData.length > 0 ? (
+            <div className="space-y-6">
+              {/* Price Chart */}
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#94a3b8" 
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8" 
+                      style={{ fontSize: '12px' }}
+                      domain={['auto', 'auto']}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #334155',
+                        borderRadius: '8px'
+                      }}
+                      labelStyle={{ color: '#94a3b8' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="price" 
+                      stroke="#06b6d4" 
+                      strokeWidth={2}
+                      fill="url(#priceGradient)" 
+                      animationDuration={1000}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Volume Chart */}
+              <div className="h-40">
+                <p className="text-sm text-slate-400 mb-2">Trading Volume</p>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#94a3b8" 
+                      style={{ fontSize: '10px' }}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8" 
+                      style={{ fontSize: '10px' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #334155',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="volume" 
+                      fill="#06b6d4" 
+                      opacity={0.6}
+                      animationDuration={1000}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <div className="h-80 flex items-center justify-center">
+              <p className="text-slate-400">Historical data will appear here after sync</p>
+            </div>
+          )}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-2 mb-6 border-b border-slate-800">
+          {['overview', 'financials', 'valuation'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 text-sm font-medium capitalize transition relative ${
+                activeTab === tab 
+                  ? 'text-cyan-500' 
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {tab}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500 animate-slide-in"></div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Profitability */}
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition shadow-lg hover:shadow-cyan-500/20 animate-fade-in">
+            <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+              <DollarSign className="w-5 h-5 text-green-400" />
+              <span>Profitability</span>
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-slate-400">ROE</span>
+                <span className="font-semibold">{company.metrics?.roe?.toFixed(2) || 'N/A'}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">ROA</span>
+                <span className="font-semibold">{company.metrics?.roa?.toFixed(2) || 'N/A'}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Net Margin</span>
+                <span className="font-semibold">{company.metrics?.netMargin?.toFixed(2) || 'N/A'}%</span>
               </div>
             </div>
           </div>
 
-          {/* Key Stats Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {[
-              { label: 'Market Cap', value: formatCurrency(company.marketCap), icon: DollarSign, color: 'cyan' },
-              { label: 'Volume', value: (company.volume / 1000000).toFixed(2) + 'M', icon: BarChart3, color: 'blue' },
-              { label: 'P/E Ratio', value: company.metrics?.peRatio?.toFixed(2) || 'N/A', icon: PieChart, color: 'purple' },
-              { label: 'Dividend Yield', value: company.metrics?.dividendYield?.toFixed(2) + '%' || 'N/A', icon: Activity, color: 'green' },
-            ].map((stat, index) => (
-              <div
-                key={stat.label}
-                style={{ animationDelay: `${index * 100}ms` }}
-                className="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-cyan-500/50 transition-all duration-300 animate-fadeIn group"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-slate-400">{stat.label}</p>
-                  <stat.icon className={`w-5 h-5 text-${stat.color}-400 group-hover:scale-110 transition-transform`} />
-                </div>
-                <p className="text-2xl font-bold">{stat.value}</p>
+          {/* Valuation */}
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition shadow-lg hover:shadow-cyan-500/20 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5 text-blue-400" />
+              <span>Valuation</span>
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-slate-400">P/E Ratio</span>
+                <span className="font-semibold">{company.metrics?.peRatio?.toFixed(2) || 'N/A'}</span>
               </div>
-            ))}
+              <div className="flex justify-between">
+                <span className="text-slate-400">P/B Ratio</span>
+                <span className="font-semibold">{company.metrics?.pbRatio?.toFixed(2) || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">EV/EBITDA</span>
+                <span className="font-semibold">{company.metrics?.evToEbitda?.toFixed(2) || 'N/A'}</span>
+              </div>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex space-x-2 mb-6 overflow-x-auto">
-            {[
-              { id: 'overview', label: 'Overview', icon: Info },
-              { id: 'financials', label: 'Financials', icon: BarChart3 },
-              { id: 'valuation', label: 'Valuation', icon: PieChart },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/50'
-                      : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Tab Content */}
-          <div className="animate-fadeIn">
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                {/* About Company */}
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-2xl font-bold mb-4 flex items-center">
-                    <Building2 className="w-6 h-6 mr-2 text-cyan-400" />
-                    About {company.name}
-                  </h2>
-                  <p className="text-slate-300 leading-relaxed">
-                    {company.description || 'No description available.'}
-                  </p>
-                </div>
-
-                {/* Key Metrics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                    <h3 className="text-xl font-bold mb-4">Profitability Metrics</h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Return on Equity (ROE)', value: company.metrics?.roe, suffix: '%' },
-                        { label: 'Return on Assets (ROA)', value: company.metrics?.roa, suffix: '%' },
-                        { label: 'Gross Margin', value: company.metrics?.grossMargin, suffix: '%' },
-                        { label: 'Operating Margin', value: company.metrics?.operatingMargin, suffix: '%' },
-                        { label: 'Net Margin', value: company.metrics?.netMargin, suffix: '%' },
-                      ].map((metric) => (
-                        <div key={metric.label} className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
-                          <span className="text-slate-400">{metric.label}</span>
-                          <span className="font-bold">{formatNumber(metric.value, metric.suffix)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                    <h3 className="text-xl font-bold mb-4">Financial Health</h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Current Ratio', value: company.metrics?.currentRatio, suffix: '' },
-                        { label: 'Debt to Equity', value: company.metrics?.debtToEquity, suffix: '' },
-                        { label: 'P/E Ratio', value: company.metrics?.peRatio, suffix: '' },
-                        { label: 'P/B Ratio', value: company.metrics?.pbRatio, suffix: '' },
-                        { label: 'Dividend Yield', value: company.metrics?.dividendYield, suffix: '%' },
-                      ].map((metric) => (
-                        <div key={metric.label} className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
-                          <span className="text-slate-400">{metric.label}</span>
-                          <span className="font-bold">{formatNumber(metric.value, metric.suffix)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+          {/* Financial Health */}
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition shadow-lg hover:shadow-cyan-500/20 animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+              <Activity className="w-5 h-5 text-purple-400" />
+              <span>Financial Health</span>
+            </h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Current Ratio</span>
+                <span className="font-semibold">{company.metrics?.currentRatio?.toFixed(2) || 'N/A'}</span>
               </div>
-            )}
-
-            {activeTab === 'financials' && (
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                <h2 className="text-2xl font-bold mb-6">Financial Statements</h2>
-                <div className="text-center py-12">
-                  <Calendar className="w-16 h-16 text-slate-700 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-2">Coming Soon</h3>
-                  <p className="text-slate-400">
-                    Historical financial statements and trends will be available here.
-                  </p>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Debt/Equity</span>
+                <span className="font-semibold">{company.metrics?.debtToEquity?.toFixed(2) || 'N/A'}</span>
               </div>
-            )}
-
-            {activeTab === 'valuation' && (
-              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                <h2 className="text-2xl font-bold mb-6">Valuation Analysis</h2>
-                <div className="text-center py-12">
-                  <PieChart className="w-16 h-16 text-slate-700 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-2">Coming Soon</h3>
-                  <p className="text-slate-400">
-                    AI-powered DCF valuation and peer comparison will be available here.
-                  </p>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Quick Ratio</span>
+                <span className="font-semibold">{company.metrics?.quickRatio?.toFixed(2) || 'N/A'}</span>
               </div>
-            )}
+            </div>
           </div>
         </div>
+
+        {/* About Section */}
+        {company.description && (
+          <div className="bg-slate-900 rounded-xl p-6 mt-6 border border-slate-800 animate-fade-in">
+            <h3 className="text-lg font-semibold mb-4">About {company.name}</h3>
+            <p className="text-slate-300 leading-relaxed">{company.description}</p>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

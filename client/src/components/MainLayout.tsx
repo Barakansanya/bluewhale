@@ -1,6 +1,7 @@
 // FILE: client/src/components/MainLayout.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import BlueWhaleLogo from './BlueWhaleLogo';
 import { 
   LayoutDashboard, 
   Filter, 

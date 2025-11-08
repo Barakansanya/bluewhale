@@ -9,6 +9,13 @@ npx prisma generate
 npm run prisma:seed
 npm run dev
 
+#Real data sync
+# Sync a single company
+curl -X POST http://localhost:5000/api/v1/sync/company/APN
+
+# Sync all companies (takes ~15 seconds)
+curl -X POST http://localhost:5000/api/v1/sync/all
+
 # Frontend setup (new terminal)
 cd ../client
 npm install
@@ -24,11 +31,98 @@ npm run dev
      git push
 
 NEXT ON LIST
-Perfect! All works like a charm:)Yaay! Now let's clean out the UI/UX design, Starting from the login page all the way through the app.
-Meaning elevate the login page to match the WOW effect app theme as well. One more thing, the logo is not accurate at all please see the attached image to refresh your memory.
-Apply the fresh logo accurately to the app where necessary. Do that with precision like Jobs,Torvald and Musk sharpnesses combined.Impress them!
-Finish this quick hardle the best be prepared for "Real data Integration".
+Yes data exists, check image attached from prisma studio. When I tried to open company profile page nothing shows, but I got the console error message below:
 
-Once done, the Data Scrapper implementation
+CompanyProfilePage.tsx:187 Uncaught TypeError: company.lastPrice.toFixed is not a function
+
+    at CompanyProfilePage (CompanyProfilePage.tsx:187:75)
+
+    at renderWithHooks (chunk-XBADDG25.js?v=0801dd47:11546:26)
+
+    at updateFunctionComponent (chunk-XBADDG25.js?v=0801dd47:14580:28)
+
+    at beginWork (chunk-XBADDG25.js?v=0801dd47:15922:22)
+
+    at HTMLUnknownElement.callCallback2 (chunk-XBADDG25.js?v=0801dd47:3672:22)
+
+    at Object.invokeGuardedCallbackDev (chunk-XBADDG25.js?v=0801dd47:3697:24)
+
+    at invokeGuardedCallback (chunk-XBADDG25.js?v=0801dd47:3731:39)
+
+    at beginWork$1 (chunk-XBADDG25.js?v=0801dd47:19763:15)
+
+    at performUnitOfWork (chunk-XBADDG25.js?v=0801dd47:19196:20)
+
+    at workLoopSync (chunk-XBADDG25.js?v=0801dd47:19135:13)
+
+CompanyProfilePage.tsx:187 Uncaught TypeError: company.lastPrice.toFixed is not a function
+
+    at CompanyProfilePage (CompanyProfilePage.tsx:187:75)
+
+    at renderWithHooks (chunk-XBADDG25.js?v=0801dd47:11546:26)
+
+    at updateFunctionComponent (chunk-XBADDG25.js?v=0801dd47:14580:28)
+
+    at beginWork (chunk-XBADDG25.js?v=0801dd47:15922:22)
+
+    at HTMLUnknownElement.callCallback2 (chunk-XBADDG25.js?v=0801dd47:3672:22)
+
+    at Object.invokeGuardedCallbackDev (chunk-XBADDG25.js?v=0801dd47:3697:24)
+
+    at invokeGuardedCallback (chunk-XBADDG25.js?v=0801dd47:3731:39)
+
+    at beginWork$1 (chunk-XBADDG25.js?v=0801dd47:19763:15)
+
+    at performUnitOfWork (chunk-XBADDG25.js?v=0801dd47:19196:20)
+
+    at workLoopSync (chunk-XBADDG25.js?v=0801dd47:19135:13)
+
+installHook.js:1 The above error occurred in the <CompanyProfilePage> component:
+
+    at CompanyProfilePage (http://localhost:5173/src/pages/CompanyProfilePage.tsx:43:22)
+
+    at ProtectedRoute (http://localhost:5173/src/components/ProtectedRoute.tsx:20:42)
+
+    at RenderedRoute (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=0801dd47:4086:5)
+
+    at Routes (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=0801dd47:4556:5)
+
+    at Router (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=0801dd47:4499:15)
+
+    at BrowserRouter (http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=0801dd47:5245:5)
+
+    at QueryClientProvider (http://localhost:5173/node_modules/.vite/deps/@tanstack_react-query.js?v=0801dd47:3088:3)
+
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+overrideMethod @ installHook.js:1
+
+chunk-XBADDG25.js?v=0801dd47:19411 Uncaught TypeError: company.lastPrice.toFixed is not a function
+
+    at CompanyProfilePage (CompanyProfilePage.tsx:187:75)
+
+    at renderWithHooks (chunk-XBADDG25.js?v=0801dd47:11546:26)
+
+    at updateFunctionComponent (chunk-XBADDG25.js?v=0801dd47:14580:28)
+
+    at beginWork (chunk-XBADDG25.js?v=0801dd47:15922:22)
+
+    at beginWork$1 (chunk-XBADDG25.js?v=0801dd47:19751:22)
+
+    at performUnitOfWork (chunk-XBADDG25.js?v=0801dd47:19196:20)
+
+    at workLoopSync (chunk-XBADDG25.js?v=0801dd47:19135:13)
+
+    at renderRootSync (chunk-XBADDG25.js?v=0801dd47:19114:15)
+
+    at recoverFromConcurrentError (chunk-XBADDG25.js?v=0801dd47:18734:28)
+
+    at performConcurrentWorkOnRoot (chunk-XBADDG25.js?v=0801dd47:18682:30)
+
+
  
  
