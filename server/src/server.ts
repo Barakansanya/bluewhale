@@ -5,6 +5,8 @@ import app from './app';
 import { env } from './config/env';
 import { prisma } from './config/database';
 import { startSyncCron } from './jobs/syncCron';
+import scraperRoutes from './routes/scraper.routes';
+import { startScraperJobs } from './cron/scraperJobs';
 
 const PORT = env.PORT || 5000;
 
@@ -14,7 +16,13 @@ async function startServer() {
     await prisma.$connect();
     console.log('✅ Database connected');
 
-    // Start cron jobs
+    // Add route
+    app.use('/api/v1/scraper', scraperRoutes);
+
+   // Start scraper jobs
+   startScraperJobs();
+
+   // Start cron jobs
     startSyncCron();
 
     // Start server

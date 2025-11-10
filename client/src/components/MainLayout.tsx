@@ -34,7 +34,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     { id: 'watchlist', label: 'Watchlist', icon: Star, path: '/watchlist' },
     { id: 'reports', label: 'Reports', icon: FileText, path: '/reports' },
     { id: 'ai-hub', label: 'AI Hub', icon: Sparkles, path: '/ai-hub' },
-    { id: 'subscribe', label: 'Subscribe', icon: CreditCard, path: '/subscribe' },
+    { id: 'subscribe', label: 'Subscribe', icon: CreditCard, path: '/subscribe' }
   ];
 
   useEffect(() => {

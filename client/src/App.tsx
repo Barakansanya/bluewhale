@@ -6,6 +6,10 @@ import DashboardPage from './pages/DashboardPage';
 import ScreenerPage from './pages/ScreenerPage';
 import WatchlistPage from './pages/WatchlistPage';
 import CompanyProfilePage from './pages/CompanyProfilePage';
+import ReportsPage from './pages/ReportsPage';
+import AIHubPage from './pages/AIHubPage';
+import SubscriptionPage from './pages/SubscriptionPage';
+import ScraperDashboard from './pages/ScraperDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Create React Query client
@@ -53,6 +57,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <CompanyProfilePage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/ai-hub"
+            element={
+              <ProtectedRoute>
+                <AIHubPage />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/subscribe"
+            element={
+              <ProtectedRoute>
+                <SubscriptionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scraper"
+            element={
+              <ProtectedRoute>
+                <ScraperDashboard />
               </ProtectedRoute>
             }
           />
