@@ -82,7 +82,7 @@ export class CompaniesService {
       });
     }
 
-    // Format response
+    // Format response - flatten metrics
     const formattedCompanies = filteredCompanies.map((company) => ({
       ...company,
       metrics: company.metrics[0] || null,
@@ -120,17 +120,24 @@ export class CompaniesService {
       throw new Error('Company not found');
     }
 
-    return company;
+    return {
+      ...company,
+      metrics: company.metrics[0] || null,
+    };
   }
 
-  async getByTicker(ticker: string) {
+  async getCompanyByTicker(ticker: string) {
     const company = await prisma.company.findUnique({
       where: { ticker: ticker.toUpperCase() },
       include: {
         metrics: {
           orderBy: { asOfDate: 'desc' },
-          take: 1,
+          take: 1
         },
+        historicalPrices: {
+          orderBy: { date: 'desc' },
+          take: 365 // Last year of data
+        }
       },
     });
 
@@ -138,7 +145,43 @@ export class CompaniesService {
       throw new Error('Company not found');
     }
 
-    return company;
+    // Convert Decimals to numbers for JSON serialization
+    const converted: any = {
+      ...company,
+      marketCap: company.marketCap ? Number(company.marketCap) : null,
+      lastPrice: company.lastPrice ? Number(company.lastPrice) : null,
+      priceChange: company.priceChange ? Number(company.priceChange) : null,
+      priceChangePercent: company.priceChangePercent ? Number(company.priceChangePercent) : null,
+      volume: company.volume ? Number(company.volume) : null,
+      metrics: company.metrics[0] ? {
+        ...company.metrics[0],
+        peRatio: company.metrics[0].peRatio ? Number(company.metrics[0].peRatio) : null,
+        pbRatio: company.metrics[0].pbRatio ? Number(company.metrics[0].pbRatio) : null,
+        psRatio: company.metrics[0].psRatio ? Number(company.metrics[0].psRatio) : null,
+        evToEbitda: company.metrics[0].evToEbitda ? Number(company.metrics[0].evToEbitda) : null,
+        roe: company.metrics[0].roe ? Number(company.metrics[0].roe) : null,
+        roa: company.metrics[0].roa ? Number(company.metrics[0].roa) : null,
+        roic: company.metrics[0].roic ? Number(company.metrics[0].roic) : null,
+        grossMargin: company.metrics[0].grossMargin ? Number(company.metrics[0].grossMargin) : null,
+        operatingMargin: company.metrics[0].operatingMargin ? Number(company.metrics[0].operatingMargin) : null,
+        netMargin: company.metrics[0].netMargin ? Number(company.metrics[0].netMargin) : null,
+        currentRatio: company.metrics[0].currentRatio ? Number(company.metrics[0].currentRatio) : null,
+        quickRatio: company.metrics[0].quickRatio ? Number(company.metrics[0].quickRatio) : null,
+        debtToEquity: company.metrics[0].debtToEquity ? Number(company.metrics[0].debtToEquity) : null,
+        dividendYield: company.metrics[0].dividendYield ? Number(company.metrics[0].dividendYield) : null,
+      } : null,
+      historicalPrices: company.historicalPrices.map(price => ({
+        ...price,
+        volume: Number(price.volume),
+      })),
+    };
+
+    return converted;
+  }
+
+  async getByTicker(ticker: string) {
+    // This is just an alias for getCompanyByTicker
+    return this.getCompanyByTicker(ticker);
   }
 
   async search(query: string) {

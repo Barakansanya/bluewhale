@@ -1,32 +1,52 @@
 // ============================================
-// FILE: server/src/server.ts
+// FILE: server/src/server.ts (CORRECTED)
 // ============================================
 import app from './app';
 import { env } from './config/env';
-import prisma from './config/database';
+import { prisma } from './config/database';
+import { startSyncCron } from './jobs/syncCron';
+import scraperRoutes from './routes/scraper.routes';
+import { startScraperJobs } from './cron/scraperJobs';
 
-const startServer = async () => {
+const PORT = env.PORT || 5000;
+
+async function startServer() {
   try {
     // Test database connection
     await prisma.$connect();
     console.log('✅ Database connected');
 
+    // Add route
+    app.use('/api/v1/scraper', scraperRoutes);
+
+   // Start scraper jobs
+   startScraperJobs();
+
+   // Start cron jobs
+    startSyncCron();
+
     // Start server
-    app.listen(env.PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${env.PORT}`);
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📍 Environment: ${env.NODE_ENV}`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
-};
+}
 
-startServer();
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
   await prisma.$disconnect();
   process.exit(0);
 });
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Shutting down gracefully...');
+  await prisma.$disconnect();
+  process.exit(0);
+});
+
+startServer();

@@ -8,6 +8,10 @@ import { env } from './config/env';
 import authRoutes from './routes/auth.routes';
 import companiesRoutes from './routes/companies.routes'; // ADD THIS
 import watchlistRoutes from './routes/watchlist.routes';
+import syncRoutes from './routes/sync.routes';
+import reportsRoutes from './routes/reports.routes';
+import aiRoutes from './routes/ai.routes';
+import scraperRoutes from './routes/scraper.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 const app = express();
@@ -37,6 +41,10 @@ app.get('/api/v1/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/companies', companiesRoutes); // ADD THIS
 app.use('/api/v1/watchlist', watchlistRoutes);
+app.use('/api/v1/sync', syncRoutes);
+app.use('/api/v1/reports', reportsRoutes);
+app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/scraper', scraperRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

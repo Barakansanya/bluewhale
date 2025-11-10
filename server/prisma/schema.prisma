@@ -113,6 +113,7 @@ model Company {
   watchlists    WatchlistItem[]
   news          NewsArticle[]
   sentiments    SentimentAnalysis[]
+  historicalPrices HistoricalPrice[]
   
   // Data source tracking
   dataSource    String?
@@ -126,6 +127,24 @@ model Company {
   @@index([sector])
   @@index([marketCap])
   @@index([isActive])
+}
+
+model HistoricalPrice {
+  id        String   @id @default(uuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  date      DateTime
+  open      Float
+  high      Float
+  low       Float
+  close     Float
+  volume    BigInt
+  
+  createdAt DateTime @default(now())
+
+  @@index([companyId, date])
+  @@unique([companyId, date])
 }
 
 // ============================================

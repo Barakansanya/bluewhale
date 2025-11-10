@@ -1,7 +1,8 @@
 // FILE: client/src/pages/LoginPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, TrendingUp } from 'lucide-react';
+import { Eye, EyeOff, TrendingUp, Sparkles, BarChart3, Shield } from 'lucide-react';
+import BlueWhaleLogo from '../components/BlueWhaleLogo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -52,106 +53,131 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
-        <div className="absolute w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
+        <div className="absolute w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl -bottom-48 -right-48 animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 relative z-10">
-        <div className="hidden lg:flex flex-col justify-center text-white space-y-6 p-12">
-          <div className="flex items-center space-x-3 mb-8">
-            <svg className="w-16 h-16 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M20,50 Q10,40 15,30 T25,25 L30,30 Q35,25 40,30 L45,35 Q50,30 55,35 C60,40 65,35 70,40 Q75,45 80,35 L85,30 Q88,35 90,45 L92,55 Q90,65 85,70 L80,72 Q75,70 72,65 L68,60 Q65,58 62,60 L58,62 Q55,60 52,58 L48,55 Q45,58 42,60 L38,58 Q35,55 32,58 L28,62 Q25,60 22,58 L20,50 Z" />
-              <polyline points="58,50 62,45 66,48 70,42 74,46 78,40" fill="none" stroke="white" strokeWidth="2"/>
-            </svg>
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight">BlueWhale</h1>
-              <p className="text-cyan-400 text-sm">Terminal</p>
-            </div>
+      {/* Grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_110%)] opacity-20"></div>
+
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 relative z-10 animate-fadeIn">
+        {/* Left Side - Branding */}
+        <div className="hidden lg:flex flex-col justify-center text-white space-y-8 p-12">
+          {/* Logo */}
+          <div className="mb-8 group cursor-pointer hover:scale-105 transition-transform duration-500">
+            <BlueWhaleLogo size={64} />
           </div>
 
-          <h2 className="text-3xl font-bold leading-tight">
-            Navigate JSE Small-Cap Markets with Precision
-          </h2>
-          
-          <p className="text-slate-300 text-lg">
-            Professional-grade research platform for South African equity markets. 
-            Real-time data, AI-powered insights, and institutional-quality analytics.
-          </p>
+          <div className="space-y-4">
+            <h2 className="text-4xl font-bold leading-tight bg-gradient-to-r from-white via-cyan-200 to-blue-200 bg-clip-text text-transparent animate-fadeIn">
+              Navigate JSE Markets with Institutional-Grade Intelligence
+            </h2>
+            
+            <p className="text-slate-300 text-lg leading-relaxed animate-fadeIn" style={{animationDelay: '0.2s'}}>
+              Join South Africa's premier financial research platform. Real-time data, AI-powered insights, and Bloomberg-level analytics at your fingertips.
+            </p>
+          </div>
 
-          <div className="space-y-4 pt-6">
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-5 h-5 text-cyan-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Advanced Screener</h3>
-                <p className="text-sm text-slate-400">
-                  Filter and sort companies by 20+ financial metrics
-                </p>
-              </div>
-            </div>
+          <div className="space-y-4 pt-4">
+            {[
+              { 
+                icon: TrendingUp, 
+                title: 'Advanced Screener', 
+                desc: 'Filter 15+ JSE companies by 20+ financial metrics',
+                color: 'cyan',
+                delay: '0.3s'
+              },
+              { 
+                icon: Sparkles, 
+                title: 'AI-Powered Analysis', 
+                desc: 'Sentiment tracking, report summaries, and DCF valuations',
+                color: 'blue',
+                delay: '0.4s'
+              },
+              { 
+                icon: BarChart3, 
+                title: 'Real-Time Insights', 
+                desc: 'Live market data with professional-grade charts',
+                color: 'purple',
+                delay: '0.5s'
+              },
+              { 
+                icon: Shield, 
+                title: 'Secure & Private', 
+                desc: 'Bank-level encryption and data protection',
+                color: 'green',
+                delay: '0.6s'
+              },
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <div 
+                  key={idx}
+                  className="flex items-start space-x-4 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-cyan-500/30 transition-all duration-300 group animate-fadeIn"
+                  style={{animationDelay: feature.delay}}
+                >
+                  <div className={`p-3 rounded-xl bg-gradient-to-br from-${feature.color}-500/20 to-${feature.color}-600/20 border border-${feature.color}-500/30 group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className={`w-6 h-6 text-${feature.color}-400`} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white mb-1 group-hover:text-cyan-400 transition-colors">{feature.title}</h3>
+                    <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+          <div className="pt-6 border-t border-white/10">
+            <p className="text-slate-400 text-sm">Trusted by analysts and investors across South Africa</p>
+            <div className="flex items-center space-x-6 mt-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-cyan-400">15+</p>
+                <p className="text-xs text-slate-400">JSE Companies</p>
               </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">AI-Powered Insights</h3>
-                <p className="text-sm text-slate-400">
-                  Sentiment analysis, automated summaries, and DCF valuations
-                </p>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-400">20+</p>
+                <p className="text-xs text-slate-400">Data Metrics</p>
               </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Company Reports</h3>
-                <p className="text-sm text-slate-400">
-                  Access integrated annual reports and financial statements
-                </p>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-400">Real-Time</p>
+                <p className="text-xs text-slate-400">Market Data</p>
               </div>
             </div>
           </div>
         </div>
 
+        {/* Right Side - Form */}
         <div className="flex items-center justify-center">
           <div className="w-full max-w-md">
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20">
-              <div className="lg:hidden flex items-center justify-center space-x-3 mb-6">
-                <svg className="w-12 h-12 text-cyan-400" viewBox="0 0 100 100" fill="currentColor">
-                  <path d="M20,50 Q10,40 15,30 T25,25 L30,30 Q35,25 40,30 L45,35 Q50,30 55,35 C60,40 65,35 70,40 Q75,45 80,35 L85,30 Q88,35 90,45 L92,55 Q90,65 85,70 L80,72 Q75,70 72,65 L68,60 Q65,58 62,60 L58,62 Q55,60 52,58 L48,55 Q45,58 42,60 L38,58 Q35,55 32,58 L28,62 Q25,60 22,58 L20,50 Z" />
-                </svg>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">BlueWhale</h1>
-                  <p className="text-cyan-400 text-xs">Terminal</p>
-                </div>
+            <div className="bg-slate-900/80 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-slate-800/50 hover:border-cyan-500/30 transition-all duration-500">
+              {/* Mobile Logo */}
+              <div className="lg:hidden flex justify-center mb-6">
+                <BlueWhaleLogo size={56} />
               </div>
 
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {isLogin ? 'Welcome Back' : 'Create Account'}
+                <h2 className="text-3xl font-bold text-white mb-2">
+                  {isLogin ? 'Welcome Back' : 'Get Started'}
                 </h2>
-                <p className="text-slate-300 text-sm">
+                <p className="text-slate-400 text-sm">
                   {isLogin 
                     ? 'Sign in to access your terminal' 
-                    : 'Start your research journey today'}
+                    : 'Create your account in seconds'}
                 </p>
               </div>
 
               <div className="space-y-5">
                 {!isLogin && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 animate-fadeIn">
                     <div>
-                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
                         First Name
                       </label>
                       <input
@@ -159,12 +185,12 @@ export default function LoginPage() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-slate-800"
                         placeholder="John"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-200 mb-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
                         Last Name
                       </label>
                       <input
@@ -172,7 +198,7 @@ export default function LoginPage() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+                        className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-slate-800"
                         placeholder="Doe"
                       />
                     </div>
@@ -180,7 +206,7 @@ export default function LoginPage() {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Email Address
                   </label>
                   <input
@@ -188,13 +214,13 @@ export default function LoginPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-slate-800"
                     placeholder="analyst@bluewhale.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-200 mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Password
                   </label>
                   <div className="relative">
@@ -203,13 +229,13 @@ export default function LoginPage() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition pr-12"
+                      className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 hover:bg-slate-800 pr-12"
                       placeholder="••••••••"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-cyan-400 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -217,8 +243,9 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm">
-                    {error}
+                  <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 text-red-300 text-sm animate-fadeIn flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                    <span>{error}</span>
                   </div>
                 )}
 
@@ -226,7 +253,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:from-cyan-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3.5 rounded-xl hover:from-cyan-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
@@ -237,7 +264,10 @@ export default function LoginPage() {
                       Processing...
                     </span>
                   ) : (
-                    isLogin ? 'Sign In' : 'Create Account'
+                    <span className="flex items-center justify-center space-x-2">
+                      <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
+                      <span className="group-hover:translate-x-1 transition-transform">→</span>
+                    </span>
                   )}
                 </button>
               </div>
@@ -249,29 +279,39 @@ export default function LoginPage() {
                     setIsLogin(!isLogin);
                     setError('');
                   }}
-                  className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition"
+                  className="text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors hover:underline"
                 >
                   {isLogin 
-                    ? "Don't have an account? Sign up" 
+                    ? "Don't have an account? Sign up free" 
                     : 'Already have an account? Sign in'}
                 </button>
               </div>
 
               {isLogin && (
                 <div className="mt-4 text-center">
-                  <button className="text-slate-400 hover:text-white text-xs transition">
+                  <button className="text-slate-500 hover:text-slate-300 text-xs transition-colors">
                     Forgot password?
                   </button>
                 </div>
               )}
             </div>
 
-            <p className="text-center text-slate-400 text-xs mt-6">
+            <p className="text-center text-slate-500 text-xs mt-6">
               © 2025 BlueWhale Technologies. All rights reserved.
             </p>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.6s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }

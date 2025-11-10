@@ -9,6 +9,13 @@ npx prisma generate
 npm run prisma:seed
 npm run dev
 
+#Real data sync
+# Sync a single company
+curl -X POST http://localhost:5000/api/v1/sync/company/APN
+
+# Sync all companies (takes ~15 seconds)
+curl -X POST http://localhost:5000/api/v1/sync/all
+
 # Frontend setup (new terminal)
 cd ../client
 npm install
@@ -24,11 +31,4 @@ npm run dev
      git push
 
 NEXT ON LIST
-Perfect! All works like a charm:)Yaay! Now let's clean out the UI/UX design, Starting from the login page all the way through the app.
-Meaning elevate the login page to match the WOW effect app theme as well. One more thing, the logo is not accurate at all please see the attached image to refresh your memory.
-Apply the fresh logo accurately to the app where necessary. Do that with precision like Jobs,Torvald and Musk sharpnesses combined.Impress them!
-Finish this quick hardle the best be prepared for "Real data Integration".
-
-Once done, the Data Scrapper implementation
- 
  
