@@ -1,96 +1,237 @@
-// ============================================
-// FILE: server/src/controllers/reports.controller.ts
-// ============================================
-import { Request, Response } from 'express';
-import { ReportsService } from '../services/reports.service';
+// server/src/controllers/reports.controller.ts
 
-const reportsService = new ReportsService();
+import { Request, Response } from 'express';
+import { prisma } from '../config/database';
+import { convertPDFToFormat } from '../services/pdfConverter.service';
+
+// Helper to convert BigInt to string
+const serializeBigInt = (obj: any): any => {
+  return JSON.parse(JSON.stringify(obj, (key, value) =>
+    typeof value === 'bigint' ? value.toString() : value
+  ));
+};
 
 export const getAllReports = async (req: Request, res: Response) => {
   try {
-    const filters = {
-      companyId: req.query.companyId as string,
-      reportType: req.query.reportType as string,
-      fiscalYear: req.query.fiscalYear ? Number(req.query.fiscalYear) : undefined,
-      search: req.query.search as string,
-      page: req.query.page ? Number(req.query.page) : 1,
-      limit: req.query.limit ? Number(req.query.limit) : 20,
-    };
+    const {
+      company,
+      reportType,
+      sector,
+      year,
+      search,
+      sortBy = 'publishDate',
+      order = 'desc',
+      page = '1',
+      limit = '20'
+    } = req.query;
 
-    const result = await reportsService.getAll(filters);
-    
-    // Convert BigInts in company data to numbers for JSON serialization
-    const sanitized = {
-      ...result,
-      reports: result.reports.map(report => ({
-        ...report,
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Build where clause
+    const where: any = {};
+
+    if (company) {
+      const companyRecord = await prisma.company.findUnique({
+        where: { ticker: company as string }
+      });
+      if (companyRecord) {
+        where.companyId = companyRecord.id;
+      }
+    }
+
+    if (reportType) {
+      where.reportType = reportType;
+    }
+
+    if (year) {
+      where.fiscalYear = parseInt(year as string);
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search as string, mode: 'insensitive' } },
+        { reportType: { contains: search as string, mode: 'insensitive' } }
+      ];
+    }
+
+    // Filter by sector
+    if (sector) {
+      const companiesInSector = await prisma.company.findMany({
+        where: { sector: sector as any },
+        select: { id: true }
+      });
+      where.companyId = {
+        in: companiesInSector.map(c => c.id)
+      };
+    }
+
+    // Get reports with company data
+    const reports = await prisma.companyReport.findMany({
+      where,
+      include: {
         company: {
-          ...report.company,
-          volume: report.company.volume ? Number(report.company.volume) : null,
-          marketCap: report.company.marketCap ? Number(report.company.marketCap) : null,
-          lastPrice: report.company.lastPrice ? Number(report.company.lastPrice) : null,
-          priceChange: report.company.priceChange ? Number(report.company.priceChange) : null,
-          priceChangePercent: report.company.priceChangePercent ? Number(report.company.priceChangePercent) : null,
+          select: {
+            ticker: true,
+            name: true,
+            sector: true
+          }
         }
-      }))
+      },
+      orderBy: { [sortBy as string]: order },
+      skip,
+      take: limitNum
+    });
+
+    const total = await prisma.companyReport.count({ where });
+
+    res.json({
+      success: true,
+      data: {
+        reports: serializeBigInt(reports),
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum)
+        }
+      }
+    });
+  } catch (error: any) {
+    console.error('Get all reports error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reports'
+    });
+  }
+};
+
+export const getCompanyReports = async (req: Request, res: Response) => {
+  try {
+    const { ticker } = req.params;
+    const { limit = '5' } = req.query;
+
+    const company = await prisma.company.findUnique({
+      where: { ticker: ticker.toUpperCase() }
+    });
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
+    }
+
+    const reports = await prisma.companyReport.findMany({
+      where: { companyId: company.id },
+      orderBy: { publishDate: 'desc' },
+      take: parseInt(limit as string)
+    });
+
+    res.json({
+      success: true,
+      data: serializeBigInt(reports)
+    });
+  } catch (error: any) {
+    console.error('Get company reports error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch company reports'
+    });
+  }
+};
+
+export const downloadReport = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { format = 'pdf' } = req.query;
+
+    const report = await prisma.companyReport.findUnique({
+      where: { id }
+    });
+
+    if (!report || !report.fileUrl) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found'
+      });
+    }
+
+    // Convert to requested format
+    const result = await convertPDFToFormat(
+      report.fileUrl,
+      format as 'pdf' | 'excel' | 'csv',
+      report.fileName || 'report.pdf'
+    );
+
+    if (!result.success || !result.data) {
+      return res.status(500).json({
+        success: false,
+        message: result.error || 'Conversion failed'
+      });
+    }
+
+    // Set appropriate headers
+    const mimeTypes = {
+      pdf: 'application/pdf',
+      excel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      csv: 'text/csv'
     };
-    
-    return res.status(200).json({ success: true, data: sanitized });
+
+    res.setHeader('Content-Type', mimeTypes[format as keyof typeof mimeTypes]);
+    res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
+    res.send(result.data);
+
   } catch (error: any) {
-    console.error('Error in getAllReports:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    console.error('Download report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to download report'
+    });
   }
 };
 
-export const getReportById = async (req: Request, res: Response) => {
+export const getReportFilters = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const report = await reportsService.getById(id);
-    return res.status(200).json({ success: true, data: report });
-  } catch (error: any) {
-    return res.status(404).json({ success: false, error: error.message });
-  }
-};
+    // Get unique values for filters
+    const companies = await prisma.company.findMany({
+      where: { isActive: true },
+      select: {
+        ticker: true,
+        name: true,
+        sector: true
+      },
+      orderBy: { name: 'asc' }
+    });
 
-export const createReport = async (req: Request, res: Response) => {
-  try {
-    const report = await reportsService.create(req.body);
-    return res.status(201).json({ success: true, data: report, message: 'Report created successfully' });
-  } catch (error: any) {
-    return res.status(400).json({ success: false, error: error.message });
-  }
-};
+    const reportTypes = await prisma.companyReport.findMany({
+      select: { reportType: true },
+      distinct: ['reportType']
+    });
 
-export const saveReport = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.userId;
-    const { reportId, notes } = req.body;
-    
-    const saved = await reportsService.saveReport(userId, reportId, notes);
-    return res.status(200).json({ success: true, data: saved, message: 'Report saved' });
-  } catch (error: any) {
-    return res.status(400).json({ success: false, error: error.message });
-  }
-};
+    const years = await prisma.companyReport.findMany({
+      select: { fiscalYear: true },
+      distinct: ['fiscalYear'],
+      orderBy: { fiscalYear: 'desc' }
+    });
 
-export const getSavedReports = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.userId;
-    const reports = await reportsService.getUserSavedReports(userId);
-    return res.status(200).json({ success: true, data: reports });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
-  }
-};
+    const sectors = [...new Set(companies.map(c => c.sector))];
 
-export const removeSavedReport = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.userId;
-    const { id } = req.params;
-    
-    await reportsService.removeSavedReport(userId, id);
-    return res.status(200).json({ success: true, data: null, message: 'Report removed from saved' });
+    res.json({
+      success: true,
+      data: {
+        companies: companies.map(c => ({ ticker: c.ticker, name: c.name })),
+        reportTypes: reportTypes.map(r => r.reportType).filter(Boolean),
+        years: years.map(y => y.fiscalYear).filter(Boolean),
+        sectors: sectors
+      }
+    });
   } catch (error: any) {
-    return res.status(400).json({ success: false, error: error.message });
+    console.error('Get filters error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch filters'
+    });
   }
 };

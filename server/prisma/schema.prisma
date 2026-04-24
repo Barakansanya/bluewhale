@@ -290,6 +290,7 @@ model CompanyReport {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  @@unique([companyId, title])  // ADD THIS LINE
   @@index([companyId, publishDate])
   @@index([reportType])
 }
