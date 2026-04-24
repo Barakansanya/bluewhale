@@ -1,12 +1,11 @@
-// ============================================
-// FILE: server/src/server.ts (CORRECTED)
-// ============================================
+// server/src/server.ts
+
 import app from './app';
 import { env } from './config/env';
 import { prisma } from './config/database';
 import { startSyncCron } from './jobs/syncCron';
-import scraperRoutes from './routes/scraper.routes';
-import { startScraperJobs } from './cron/scraperJobs';
+import { startScraperCron } from './jobs/scraper.cron';
+import { startReportScraperJob } from './jobs/reportScraper.job';
 
 const PORT = env.PORT || 5000;
 
@@ -16,14 +15,12 @@ async function startServer() {
     await prisma.$connect();
     console.log('✅ Database connected');
 
-    // Add route
-    app.use('/api/v1/scraper', scraperRoutes);
+    // Start cron jobs
+    startSyncCron(); // Hourly price sync
+    startScraperCron(); // Daily SENS scraper (6 AM + 5 PM)
 
-   // Start scraper jobs
-   startScraperJobs();
-
-   // Start cron jobs
-    startSyncCron();
+    // Start report scraper (runs once on startup)
+    startReportScraperJob();
 
     // Start server
     app.listen(PORT, () => {

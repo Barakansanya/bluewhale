@@ -1,27 +1,26 @@
-// ============================================
-// FILE: server/src/routes/reports.routes.ts
-// ============================================
+// server/src/routes/reports.routes.ts
+
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth.middleware';
-import {
-  getAllReports,
-  getReportById,
-  createReport,
-  saveReport,
-  getSavedReports,
-  removeSavedReport,
+import { 
+  getAllReports, 
+  getCompanyReports, 
+  downloadReport,
+  getReportFilters 
 } from '../controllers/reports.controller';
+import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// Public routes
-router.get('/', getAllReports);
-router.get('/:id', getReportById);
+// Get all reports with filters
+router.get('/', authenticate, getAllReports);
 
-// Protected routes
-router.post('/', authenticate, createReport);
-router.post('/save', authenticate, saveReport);
-router.get('/saved/me', authenticate, getSavedReports);
-router.delete('/saved/:id', authenticate, removeSavedReport);
+// Get filter options
+router.get('/filters', authenticate, getReportFilters);
+
+// Get reports for specific company
+router.get('/company/:ticker', authenticate, getCompanyReports);
+
+// Download report in specific format
+router.get('/:id/download', authenticate, downloadReport);
 
 export default router;

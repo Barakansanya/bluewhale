@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
+import CompanyReports from '../components/CompanyReports';
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -227,6 +228,11 @@ export default function CompanyProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Company Reports Section */}
+        <div className="bg-slate-900 rounded-2xl p-6 mb-6 border border-slate-800 shadow-xl animate-slide-up">
+          <CompanyReports ticker={company.ticker} />
         </div>
 
         {/* Price Chart */}

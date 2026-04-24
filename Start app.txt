@@ -30,5 +30,16 @@ npm run dev
 # 4. Push the changes to GitHub
      git push
 
-NEXT ON LIST
+NEXT TO DO LIST
+Here are my answers to your questions:
+
+Question 1: No
+
+Question 2: Yes, I think so see my .env file inside the server folder attached.
+
+Question 3: It's Local PostgreSQL
+
+Question 4: Today
+
+Question 5: Yes
  
