@@ -4,7 +4,7 @@ import { Activity, Database, Clock, AlertCircle, CheckCircle, XCircle, Play, Ref
 export default function ScraperDashboard() {
   const [stats, setStats] = useState({
     totalCompanies: 15,
-    lastScrapeTime: null,
+    lastScrapeTime: string | null;,
     successfulScrapes: 0,
     failedScrapes: 0,
     nextScheduledScrape: '2:00 AM SAST'
