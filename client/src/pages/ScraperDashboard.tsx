@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+{ useState, useEffect } from 'react';
 import { Activity, Database, Clock, AlertCircle, CheckCircle, XCircle, Play, RefreshCw, TrendingUp } from 'lucide-react';
 
 export default function ScraperDashboard() {

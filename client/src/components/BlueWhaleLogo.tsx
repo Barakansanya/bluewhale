@@ -1,5 +1,5 @@
 // FILE: client/src/components/BlueWhaleLogo.tsx
-import React from 'react';
+
 
 interface LogoProps {
   size?: number;

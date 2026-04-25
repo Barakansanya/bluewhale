@@ -1,5 +1,5 @@
 // FILE: client/src/pages/DashboardPage.tsx
-import React, { useState, useEffect } from 'react';
+{ useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import { 

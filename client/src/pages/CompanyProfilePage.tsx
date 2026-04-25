@@ -1,5 +1,5 @@
 // FILE: client/src/pages/CompanyProfilePage.tsx
-import React, { useState, useEffect } from 'react';
+{ useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import CompanyReports from '../components/CompanyReports';

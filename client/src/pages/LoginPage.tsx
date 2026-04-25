@@ -1,5 +1,5 @@
 // FILE: client/src/pages/LoginPage.tsx
-import React, { useState } from 'react';
+{ useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, TrendingUp, Sparkles, BarChart3, Shield } from 'lucide-react';
 import BlueWhaleLogo from '../components/BlueWhaleLogo';

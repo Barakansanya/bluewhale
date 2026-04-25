@@ -33,4 +33,6 @@ npm run dev
 NEXT TO DO LIST
 Code is already pushed to github see text file attached of my terminal.  
 Git URL :https://github.com/Barakansanya/bluewhale 
+
+My railway URL: https://bluewhale-production.up.railway.app
  
