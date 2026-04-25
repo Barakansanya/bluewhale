@@ -148,7 +148,7 @@ export class CompaniesService {
     // Convert Decimals to numbers for JSON serialization
     const converted: any = {
       ...company,
-      marketCap: company.marketCap ? Number(company.marketCap) : null,
+      marketCap: Number(company.marketCap) ? Number(Number(company.marketCap)) : null,
       lastPrice: company.lastPrice ? Number(company.lastPrice) : null,
       priceChange: company.priceChange ? Number(company.priceChange) : null,
       priceChangePercent: company.priceChangePercent ? Number(company.priceChangePercent) : null,
