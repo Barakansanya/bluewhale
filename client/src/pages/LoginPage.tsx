@@ -1,4 +1,3 @@
-import React from 'react';
 // FILE: client/src/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { useState, useEffect } from 'react';
 import MainLayout from '../components/MainLayout';
 export default function ReportsPage() {
