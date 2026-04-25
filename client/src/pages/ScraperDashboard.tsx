@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Database, Clock, AlertCircle, CheckCircle, XCircle, Play, RefreshCw, TrendingUp } from 'lucide-react';
 
 export default function ScraperDashboard() {
-  const [stats, setStats] = useState({
-    totalCompanies: 15,
-    lastScrapeTime: string | null;,
-    successfulScrapes: 0,
-    failedScrapes: 0,
-    nextScheduledScrape: '2:00 AM SAST'
-  });
+ const [stats, setStats] = useState<{
+  totalCompanies: number;
+  lastScrapeTime: string | null;
+  successfulScrapes: number;
+  failedScrapes: number;
+  nextScheduledScrape: string;
+}>({
+  totalCompanies: 15,
+  lastScrapeTime: null,
+  successfulScrapes: 0,
+  failedScrapes: 0,
+  nextScheduledScrape: '',
+});
 
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -49,7 +55,7 @@ export default function ScraperDashboard() {
       } else {
         throw new Error(data.error);
       }
-    } catch (error) {
+    } catch (error: any) {
       addLog(`❌ Failed to scrape ${selectedCompany}: ${error.message}`, 'error');
       setStats(prev => ({
         ...prev,
@@ -84,7 +90,7 @@ export default function ScraperDashboard() {
       } else {
         throw new Error(data.error);
       }
-    } catch (error) {
+    } catch (error: any) {
       addLog(`❌ Bulk scrape failed: ${error.message}`, 'error');
     } finally {
       setLoading(false);
