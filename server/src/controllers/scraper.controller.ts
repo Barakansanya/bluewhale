@@ -33,7 +33,7 @@ export const scrapeCompany = async (req: Request, res: Response) => {
 export const scrapeAll = async (req: Request, res: Response) => {
   try {
     // Run in background
-    scrapeAllCompanies().catch(err => {
+    scrapeAllCompanies().catch((err: any) => {
       console.error('Bulk scrape error:', err);
     });
 

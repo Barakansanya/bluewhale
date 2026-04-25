@@ -1,37 +1,9 @@
-// ============================================
-// FILE: server/src/utils/response.utils.ts
-// ============================================
 import { Response } from 'express';
 
-interface ApiResponse<T = any> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  error?: string;
-}
-
-export const sendSuccess = <T>(
-  res: Response,
-  data?: T,
-  message?: string,
-  statusCode = 200
-): Response => {
-  const response: ApiResponse<T> = {
-    success: true,
-    message,
-    data,
-  };
-  return res.status(statusCode).json(response);
+export const successResponse = (res: Response, data: any, message = 'Success') => {
+  return res.json({ success: true, message, data });
 };
 
-export const sendError = (
-  res: Response,
-  error: string,
-  statusCode = 400
-): Response => {
-  const response: ApiResponse = {
-    success: false,
-    error,
-  };
-  return res.status(statusCode).json(response);
+export const errorResponse = (res: Response, message = 'Error', status = 500) => {
+  return res.status(status).json({ success: false, message });
 };
