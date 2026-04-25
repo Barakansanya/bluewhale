@@ -1,4 +1,4 @@
-{ useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FileText, ExternalLink, Calendar, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface SENSAnnouncement {

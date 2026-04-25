@@ -1,4 +1,4 @@
-{ useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FileText, Download, ExternalLink, Calendar, ChevronDown } from 'lucide-react';
 
 interface Report {
