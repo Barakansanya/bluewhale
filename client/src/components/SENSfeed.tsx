@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { FileText, ExternalLink, Calendar, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 

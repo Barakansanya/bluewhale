@@ -1,3 +1,4 @@
+import React from 'react';
 export default function BlueWhaleLogo({ size = 32 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none">

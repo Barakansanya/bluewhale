@@ -1,3 +1,4 @@
+import React from 'react';
 // FILE: client/src/components/ProtectedRoute.tsx
 import { Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';

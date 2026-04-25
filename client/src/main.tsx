@@ -1,3 +1,4 @@
+import React from 'react';
 // FILE: client/src/main.tsx
 
 import ReactDOM from 'react-dom/client';
