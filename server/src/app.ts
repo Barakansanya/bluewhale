@@ -1,6 +1,7 @@
 // FILE: server/src/app.ts
 import './utils/bigint.utils';
 import express from 'express';
+import healthRoute from './routes/health.route';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -15,6 +16,7 @@ import scraperRoutes from './routes/scraper.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
 
 const app = express();
+app.use('/', healthRoute);
 
 // Middleware
 app.use(helmet());
