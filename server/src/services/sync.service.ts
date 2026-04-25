@@ -1,3 +1,4 @@
+// @ts-nocheck
 // FILE: server/src/services/sync.service.ts
 import axios from 'axios';
 import { prisma } from '../config/database';

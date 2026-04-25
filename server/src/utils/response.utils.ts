@@ -1,5 +1,5 @@
 import { Response } from 'express';
-export const successResponse = (res: Response, data: any, message = 'Success') => res.json({ success: true, message, data });
-export const errorResponse = (res: Response, message = 'Error', status = 500) => res.status(status).json({ success: false, message });
+export const successResponse = (res: Response, data: any, message = 'Success', status = 200) => res.status(status).json({ success: true, message, data });
+export const errorResponse = (res: Response, message = 'Error', status = 500, data?: any) => res.status(status).json({ success: false, message, data });
 export const sendSuccess = successResponse;
 export const sendError = errorResponse;

@@ -19,4 +19,4 @@ export const scrapeAllCompanies = async (): Promise<ScraperResult> => {
 };
 
 export default { scrapeCompanyData, scrapeAllCompanies };
-export const scrapeSENSAnnouncements = async () => ({ success: true, data: [] });
+export const scrapeSENSAnnouncements = async (..._args: any[]) => ({ success: true, data: [], error: null });
