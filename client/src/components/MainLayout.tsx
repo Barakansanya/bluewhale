@@ -1,14 +1,14 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import BlueWhaleLogo from './BlueWhaleLogo';
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({ children }: any) {
   const navigate = useNavigate();
   
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="bg-slate-800 p-4 flex items-center justify-between">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-          <BlueWhaleLogo />
+          <span className="text-2xl">🐋</span>
           <span className="text-xl font-bold">BlueWhale</span>
         </div>
         <nav className="flex gap-4">
