@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import BlueWhaleLogo from './BlueWhaleLogo';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -13,8 +12,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <span className="text-xl font-bold">BlueWhale</span>
         </div>
         <nav className="flex gap-4">
-          <button onClick={() => navigate('/dashboard')}>Dashboard</button>
-          <button onClick={() => navigate('/screener')}>Screener</button>
+          <button onClick={() => navigate('/dashboard')} className="hover:text-blue-400">Dashboard</button>
+          <button onClick={() => navigate('/screener')} className="hover:text-blue-400">Screener</button>
         </nav>
       </header>
       <main>{children}</main>
