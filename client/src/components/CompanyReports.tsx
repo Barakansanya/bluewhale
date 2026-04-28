@@ -29,7 +29,7 @@ export default function CompanyReports({ ticker }: CompanyReportsProps) {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/v1/reports/company/${ticker}`, {
+      const response = await fetch(`https://bluewhale-production.up.railway.app/api/v1/reports/company/${ticker}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -50,7 +50,7 @@ export default function CompanyReports({ ticker }: CompanyReportsProps) {
       const token = localStorage.getItem('token');
       
       const response = await fetch(
-        `http://localhost:5000/api/v1/reports/${reportId}/download?format=${format}`,
+        `https://bluewhale-production.up.railway.app/api/v1/reports/${reportId}/download?format=${format}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
 

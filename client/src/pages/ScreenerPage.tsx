@@ -39,7 +39,7 @@ export default function ScreenerPage() {
   const addToWatchlist = async (companyId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/v1/watchlist/items', {
+      const response = await fetch('https://bluewhale-production.up.railway.app/api/v1/watchlist/items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function ScreenerPage() {
         ...(sectorFilter && { sector: sectorFilter }),
       });
 
-      const response = await fetch(`http://localhost:5000/api/v1/companies?${params}`);
+      const response = await fetch(`https://bluewhale-production.up.railway.app/api/v1/companies?${params}`);
       const data = await response.json();
 
       if (data.success) {

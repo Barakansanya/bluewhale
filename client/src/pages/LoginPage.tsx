@@ -23,7 +23,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/' + (isLogin ? 'login' : 'register'), {
+      const response = await fetch('https://bluewhale-production.up.railway.app/api/v1/auth/' + (isLogin ? 'login' : 'register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

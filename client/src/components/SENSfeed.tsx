@@ -28,7 +28,7 @@ export default function SENSFeed({ ticker, compact = false }: SENSFeedProps) {
       setError(null);
       
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/v1/scraper/sens/${ticker}`, {
+      const response = await fetch(`https://bluewhale-production.up.railway.app/api/v1/scraper/sens/${ticker}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const fetchWatchlist = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/v1/watchlist/default', {
+      const response = await fetch('https://bluewhale-production.up.railway.app/api/v1/watchlist/default', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
