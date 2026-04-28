@@ -25,12 +25,6 @@ export default function CompanyProfilePage() {
         <Link to="/screener" className="text-gray-400 text-sm">← Back</Link>
         <h1 className="text-3xl font-bold mt-2">{c.name} <span className="text-gray-500 text-xl">{c.ticker}.JO</span></h1>
         <div className="mt-4 text-2xl">{price? `R ${price.toFixed(2)}` : '—'} <span className={chg>=0?'text-green-400 ml-2':'text-red-400 ml-2'}>{chg?.toFixed(2)}%</span></div>
-        <div className="grid md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-gray-900 p-4 rounded-xl">Market Cap<br/><b>{c.marketCap? (c.marketCap/1e9).toFixed(1)+'B' : '—'}</b></div>
-          <div className="bg-gray-900 p-4 rounded-xl">Sector<br/><b>{c.sector}</b></div>
-          <div className="bg-gray-900 p-4 rounded-xl">P/E<br/><b>{c.metrics?.peRatio?.toFixed(2) || '—'}</b></div>
-          <div className="bg-gray-900 p-4 rounded-xl">Div Yield<br/><b>{c.metrics?.dividendYield? (c.metrics.dividendYield*100).toFixed(2)+'%' : '—'}</b></div>
-        </div>
       </div>
     </MainLayout>
   );
