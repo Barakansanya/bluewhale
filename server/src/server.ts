@@ -1,4 +1,5 @@
 import { syncJsePrices } from './services/priceSync';
+import syncRoutes from './routes/sync.routes';
 // server/src/server.ts
 
 import app from './app';
