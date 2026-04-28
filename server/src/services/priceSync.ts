@@ -18,11 +18,11 @@ export async function syncJsePrices() {
         await prisma.company.update({
           where: { id: c.id },
           data: {
-            lastPrice: q.price,
-            priceChange: q.change,
-            priceChangePercent: q.changesPercentage,
-            volume: q.volume? BigInt(Math.floor(q.volume)) : null,
-            marketCap: q.marketCap? BigInt(Math.floor(q.marketCap)) : null,
+            lastPrice: q.price ?? null,
+            priceChange: q.change ?? null,
+            priceChangePercent: q.changesPercentage ?? null,
+            volume: q.volume ?? null,
+            marketCap: q.marketCap ?? null,
             lastScrapedAt: new Date()
           }
         });
