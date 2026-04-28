@@ -1,6 +1,37 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
+
+const API = import.meta.env.VITE_API_URL || 'https://bluewhale-production.up.railway.app/api/v1';
+
 export default function CompanyProfilePage() {
-  return <MainLayout><div className="p-6 text-white"><h1>Company Profile</h1></div></MainLayout>;
+  const { id } = useParams();
+  const [c, setC] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/companies/${id}`).then(r=>r.json()).then(d=>setC(d.data)).finally(()=>setLoading(false));
+  }, [id]);
+
+  if (loading) return <MainLayout><div className="p-8 text-white">Loading...</div></MainLayout>;
+  if (!c) return <MainLayout><div className="p-8 text-white">Not found</div></MainLayout>;
+
+  const price = c.lastPrice? Number(c.lastPrice) : null;
+  const chg = c.priceChangePercent? Number(c.priceChangePercent) : null;
+
+  return (
+    <MainLayout>
+      <div className="p-6 text-white max-w-6xl mx-auto">
+        <Link to="/screener" className="text-gray-400 text-sm">← Back</Link>
+        <h1 className="text-3xl font-bold mt-2">{c.name} <span className="text-gray-500 text-xl">{c.ticker}.JO</span></h1>
+        <div className="mt-4 text-2xl">{price? `R ${price.toFixed(2)}` : '—'} <span className={chg>=0?'text-green-400 ml-2':'text-red-400 ml-2'}>{chg?.toFixed(2)}%</span></div>
+        <div className="grid md:grid-cols-4 gap-4 mt-6">
+          <div className="bg-gray-900 p-4 rounded-xl">Market Cap<br/><b>{c.marketCap? (c.marketCap/1e9).toFixed(1)+'B' : '—'}</b></div>
+          <div className="bg-gray-900 p-4 rounded-xl">Sector<br/><b>{c.sector}</b></div>
+          <div className="bg-gray-900 p-4 rounded-xl">P/E<br/><b>{c.metrics?.peRatio?.toFixed(2) || '—'}</b></div>
+          <div className="bg-gray-900 p-4 rounded-xl">Div Yield<br/><b>{c.metrics?.dividendYield? (c.metrics.dividendYield*100).toFixed(2)+'%' : '—'}</b></div>
+        </div>
+      </div>
+    </MainLayout>
+  );
 }
