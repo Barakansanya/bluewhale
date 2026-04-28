@@ -1,3 +1,4 @@
+import { syncJsePrices } from './services/priceSync';
 // server/src/server.ts
 
 import app from './app';
