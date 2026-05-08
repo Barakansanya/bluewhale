@@ -115,40 +115,61 @@ export async function syncPrices(): Promise<{ updated: number; failed: number; s
   console.log(`💰 Syncing prices for ${companies.length} companies...`);
 
   // FMP free plan does not support batch quotes for JSE stocks — use individual requests
+  // FMP free plan blocks JSE (.JO) stocks with 403 — use Yahoo Finance instead.
+  // Yahoo Finance covers JSE stocks for free with no API key required.
+  const YAHOO = 'https://query1.finance.yahoo.com/v7/finance/quote';
+
+  // Yahoo supports batch queries — fetch all symbols in one request
+  const symbols = companies.map(c => `${c.ticker}.JO`).join(',');
+  let yahooQuotes: any[] = [];
+
+  try {
+    const { data } = await axios.get(YAHOO, {
+      params: { symbols, fields: 'regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketVolume,marketCap' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      timeout: 20000,
+    });
+    yahooQuotes = data?.quoteResponse?.result || [];
+  } catch (err: any) {
+    console.error('❌ Yahoo Finance batch request failed:', err.message);
+    return { updated: 0, failed: companies.length, skipped: 0 };
+  }
+
+  // Build lookup map: MTN.JO -> quote
+  const quoteMap = new Map<string, any>();
+  for (const q of yahooQuotes) quoteMap.set(q.symbol, q);
+
   let updated = 0, failed = 0, skipped = 0;
 
   for (const company of companies) {
     const symbol = `${company.ticker}.JO`;
-    try {
-      const url = `${FMP}/quote/${symbol}?apikey=${key}`;
-      const { data } = await axios.get(url, { timeout: 10000 });
-      const q = Array.isArray(data) ? data[0] : null;
+    const q = quoteMap.get(symbol);
 
-      if (!q || !q.price) {
-        console.warn(`⚠️  ${company.ticker}: no quote data from FMP`);
-        skipped++;
-      } else {
-        await prisma.company.update({
-          where: { id: company.id },
-          data: {
-            lastPrice:          q.price             ?? company.lastPrice,
-            priceChange:        q.change            ?? 0,
-            priceChangePercent: q.changesPercentage ?? 0,
-            volume:             q.volume            ?? null,
-            marketCap:          q.marketCap         ?? null,
-            lastScrapedAt:      new Date(),
-            updatedAt:          new Date(),
-          },
-        });
-        console.log(`✅ ${company.ticker}: R${q.price} (${q.changesPercentage?.toFixed(2)}%)`);
-        updated++;
-      }
+    if (!q || !q.regularMarketPrice) {
+      console.warn(`⚠️  ${company.ticker}: no data from Yahoo Finance`);
+      skipped++;
+      continue;
+    }
+
+    try {
+      await prisma.company.update({
+        where: { id: company.id },
+        data: {
+          lastPrice:          q.regularMarketPrice              ?? company.lastPrice,
+          priceChange:        q.regularMarketChange             ?? 0,
+          priceChangePercent: q.regularMarketChangePercent      ?? 0,
+          volume:             q.regularMarketVolume             ?? null,
+          marketCap:          q.marketCap                       ?? null,
+          lastScrapedAt:      new Date(),
+          updatedAt:          new Date(),
+        },
+      });
+      console.log(`✅ ${company.ticker}: R${q.regularMarketPrice?.toFixed(2)} (${q.regularMarketChangePercent?.toFixed(2)}%)`);
+      updated++;
     } catch (err: any) {
-      console.error(`❌ ${company.ticker} failed:`, err.message);
+      console.error(`❌ ${company.ticker} DB update failed:`, err.message);
       failed++;
     }
-    // Rate limit: FMP free = ~10 req/min — 350ms between calls stays safely under
-    await delay(350);
   }
 
   console.log(`💰 Price sync done — updated: ${updated}, skipped: ${skipped}, failed: ${failed}`);
