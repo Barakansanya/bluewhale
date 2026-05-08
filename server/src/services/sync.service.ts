@@ -115,61 +115,51 @@ export async function syncPrices(): Promise<{ updated: number; failed: number; s
   console.log(`💰 Syncing prices for ${companies.length} companies...`);
 
   // FMP free plan does not support batch quotes for JSE stocks — use individual requests
-  // FMP free plan blocks JSE (.JO) stocks with 403 — use Yahoo Finance instead.
-  // Yahoo Finance covers JSE stocks for free with no API key required.
-  const YAHOO = 'https://query1.finance.yahoo.com/v7/finance/quote';
-
-  // Yahoo supports batch queries — fetch all symbols in one request
-  const symbols = companies.map(c => `${c.ticker}.JO`).join(',');
-  let yahooQuotes: any[] = [];
-
-  try {
-    const { data } = await axios.get(YAHOO, {
-      params: { symbols, fields: 'regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketVolume,marketCap' },
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-      timeout: 20000,
-    });
-    yahooQuotes = data?.quoteResponse?.result || [];
-  } catch (err: any) {
-    console.error('❌ Yahoo Finance batch request failed:', err.message);
-    return { updated: 0, failed: companies.length, skipped: 0 };
-  }
-
-  // Build lookup map: MTN.JO -> quote
-  const quoteMap = new Map<string, any>();
-  for (const q of yahooQuotes) quoteMap.set(q.symbol, q);
-
+  // Use Yahoo Finance v8 chart endpoint — no API key, no auth, works for JSE .JO stocks.
+  // v7/quote now requires auth (401), v8/chart still works freely per ticker.
   let updated = 0, failed = 0, skipped = 0;
 
   for (const company of companies) {
     const symbol = `${company.ticker}.JO`;
-    const q = quoteMap.get(symbol);
-
-    if (!q || !q.regularMarketPrice) {
-      console.warn(`⚠️  ${company.ticker}: no data from Yahoo Finance`);
-      skipped++;
-      continue;
-    }
-
     try {
-      await prisma.company.update({
-        where: { id: company.id },
-        data: {
-          lastPrice:          q.regularMarketPrice              ?? company.lastPrice,
-          priceChange:        q.regularMarketChange             ?? 0,
-          priceChangePercent: q.regularMarketChangePercent      ?? 0,
-          volume:             q.regularMarketVolume             ?? null,
-          marketCap:          q.marketCap                       ?? null,
-          lastScrapedAt:      new Date(),
-          updatedAt:          new Date(),
-        },
-      });
-      console.log(`✅ ${company.ticker}: R${q.regularMarketPrice?.toFixed(2)} (${q.regularMarketChangePercent?.toFixed(2)}%)`);
-      updated++;
+      const { data } = await axios.get(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+        {
+          params: { interval: '1d', range: '1d' },
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          timeout: 10000,
+        }
+      );
+
+      const meta = data?.chart?.result?.[0]?.meta;
+      if (!meta?.regularMarketPrice) {
+        console.warn(`⚠️  ${company.ticker}: no price data from Yahoo`);
+        skipped++;
+      } else {
+        const prev   = meta.previousClose || meta.chartPreviousClose || meta.regularMarketPrice;
+        const change = meta.regularMarketPrice - prev;
+        const changePct = prev ? (change / prev) * 100 : 0;
+
+        await prisma.company.update({
+          where: { id: company.id },
+          data: {
+            lastPrice:          meta.regularMarketPrice,
+            priceChange:        change,
+            priceChangePercent: changePct,
+            volume:             meta.regularMarketVolume ?? null,
+            marketCap:          meta.marketCap           ?? null,
+            lastScrapedAt:      new Date(),
+            updatedAt:          new Date(),
+          },
+        });
+        console.log(`✅ ${company.ticker}: R${meta.regularMarketPrice.toFixed(2)} (${changePct.toFixed(2)}%)`);
+        updated++;
+      }
     } catch (err: any) {
-      console.error(`❌ ${company.ticker} DB update failed:`, err.message);
+      console.error(`❌ ${company.ticker} failed:`, err.message);
       failed++;
     }
+    await delay(300);
   }
 
   console.log(`💰 Price sync done — updated: ${updated}, skipped: ${skipped}, failed: ${failed}`);
