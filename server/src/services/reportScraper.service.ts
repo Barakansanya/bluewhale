@@ -27,68 +27,77 @@ interface ScrapedReport {
   date?: Date;
 }
 
+// Two-pass filter: reject noise first, then require a quality match.
+// Goal: only Annual Reports and Financial Results reach the database.
 function isFinancialReport(title: string, url: string): boolean {
   const combined = `${title} ${url}`.toLowerCase();
-  
+
+  // ── Pass 1: Hard reject — these are never financial reports ──────────────
   const rejectKeywords = [
-    'paia',
-    'paia manual',
-    'privacy',
-    'cookie',
-    'terms and conditions',
-    'terms & conditions',
-    'policy',
-    'manual',
-    'charter',
-    'code of conduct',
-    'ethics',
-    'memorandum',
-    'notice to shareholders',
-    'general notice',
-    'circular to shareholders',
-    'proxy form',
-    'code of ethics'
+    // Governance / legal noise
+    'paia', 'privacy policy', 'cookie', 'terms and conditions', 'terms & conditions',
+    'code of conduct', 'code of ethics', 'memorandum', 'charter', 'manual',
+    'proxy form', 'proxy circular', 'notice to shareholders', 'notice of annual',
+    'general meeting', 'special meeting',
+    // Announcement / release noise (not the actual report)
+    'sens announcement', 'sens release',
+    'media release', 'press release',
+    'circular to shareholder',
+    // Supplementary / ESG / CSR — not financial statements
+    'supplementary information', 'supplementary slides',
+    'modern slavery', 'uk modern slavery', 'modern slavery statement',
+    'sustainability report', 'esg report', 'social report',
+    'transformation report', 'bbbee report',
+    // Interactive / web-based (no downloadable PDF)
+    'view interactive', 'interactive report', 'interactive book',
+    'interactive annual',
   ];
-  
+
   for (const keyword of rejectKeywords) {
     if (combined.includes(keyword)) {
       console.log(`   ⛔ Rejected: "${title}" (contains "${keyword}")`);
       return false;
     }
   }
-  
+
+  // ── Pass 2: Quality accept — must match a financial report pattern ────────
   const acceptKeywords = [
-    'annual report',
-    'integrated report',
-    'integrated annual report',
-    'interim result',
-    'financial result',
-    'trading statement',
-    'financial statement',
-    'annual financial',
-    'half year result',
-    'full year result',
-    'fy 20',
-    'fy20',
-    'h1 20',
-    'h2 20',
-    'quarterly result',
-    'sustainability report',
-    'esg report'
+    // Annual reports
+    'annual report', 'integrated report', 'integrated annual report',
+    'annual financial', 'annual results',
+    // Financial results (interim + full year both valuable)
+    'financial result', 'analysis of financial result',
+    'audited result', 'abridged consolidated',
+    'interim result', 'half year result', 'half-year result',
+    'full year result', 'full-year result',
+    'results presentation',
+    // Specific statement types
+    'financial statement', 'income statement',
+    'summary financial statement',
+    // Period markers that indicate a results document
+    'fy 20', 'fy20', 'h1 20', 'h2 20',
+    // Trailing years in URL (e.g. annual-report-2024.pdf)
   ];
-  
+
   for (const keyword of acceptKeywords) {
     if (combined.includes(keyword)) {
       return true;
     }
   }
-  
-  if (url.endsWith('.pdf')) {
-    if (/20\d{2}/.test(combined)) {
-      return true;
-    }
+
+  // ── Pass 3: Narrow PDF fallback — year in URL path AND pdf extension ──────
+  // Only accept if the URL itself (not just title) contains a financial keyword
+  if (url.toLowerCase().endsWith('.pdf')) {
+    const urlLower = url.toLowerCase();
+    const urlFinancialHints = [
+      'annual', 'result', 'report', 'financial', 'interim',
+      'integrated', 'audited', 'abridged'
+    ];
+    const hasUrlHint = urlFinancialHints.some(hint => urlLower.includes(hint));
+    const hasYear    = /20\d{2}/.test(urlLower);
+    if (hasUrlHint && hasYear) return true;
   }
-  
+
   return false;
 }
 
@@ -713,11 +722,90 @@ async function scrapeFromCompanyIRPage(ticker: string, companyWebsite: string): 
   }
 
   // Standard scraper for working companies
+  // Expanded verified IR pages — static HTML that cheerio can parse
+  // Ordered: highest-confidence pages first
   const verifiedIRPages: Record<string, string[]> = {
+    // Originally verified ─────────────────────────────────────
     'GFI': ['https://www.goldfields.com/investors/reports/'],
     'SOL': ['https://www.sasol.com/investor-centre/integrated-reports'],
-    'AMS': ['https://www.angloamerican.com/investors/annual-reporting'],
-    'FSR': ['https://www.firstrand.co.za/investors/financial-results/']
+    'FSR': ['https://www.firstrand.co.za/investors/financial-results/'],
+    // Mining & Resources ──────────────────────────────────────
+    'EXX': [
+      'https://www.exxaro.com/investor-centre/integrated-reports/',
+      'https://www.exxaro.com/investor-centre/results-and-reports/',
+    ],
+    'HAR': [
+      'https://www.harmony.co.za/investors/reports/',
+      'https://www.harmony.co.za/investors/financial-results/',
+    ],
+    'ARI': [
+      'https://www.africanrainbow.co.za/investor-centre/annual-reports/',
+      'https://www.africanrainbow.co.za/investor-centre/results-presentations/',
+    ],
+    'DRD': ['https://www.drdgold.com/investors/results-presentations/'],
+    'NPH': [
+      'https://www.northamplatinum.com/investors/annual-reports/',
+      'https://www.northamplatinum.com/investors/results/',
+    ],
+    // Financials ──────────────────────────────────────────────
+    'SLM': [
+      'https://www.sanlam.com/investor-relations/financial-results/',
+      'https://www.sanlam.com/investor-relations/reports-and-results/',
+    ],
+    'OMU': [
+      'https://www.oldmutual.com/investor-relations/results-reports/',
+      'https://www.oldmutual.com/investor-relations/annual-reports/',
+    ],
+    'DSY': ['https://www.discovery.co.za/corporate/investor-relations'],
+    'GRT': [
+      'https://www.growthpoint.co.za/investor-relations/results-and-presentations/',
+      'https://www.growthpoint.co.za/investor-relations/annual-report/',
+    ],
+    // Consumer & Retail ───────────────────────────────────────
+    'WHL': [
+      'https://www.woolworthsholdings.co.za/investor/results-and-presentations/',
+      'https://www.woolworthsholdings.co.za/investor/annual-report/',
+    ],
+    'TFG': [
+      'https://www.tfggroup.co.za/investor-relations/results-and-reports/',
+      'https://www.tfggroup.co.za/investor-relations/annual-reports/',
+    ],
+    'MRP': [
+      'https://mrpg.com/investor-relations/results-presentations/',
+      'https://mrpg.com/investor-relations/annual-reports/',
+    ],
+    'SPP': [
+      'https://www.spargroup.com/investors/annual-reports/',
+      'https://www.spargroup.com/investors/results/',
+    ],
+    // Healthcare ──────────────────────────────────────────────
+    'APN': [
+      'https://www.aspenpharma.com/investor-relations/results-and-reports/',
+      'https://www.aspenpharma.com/investor-relations/annual-reports/',
+    ],
+    'NTC': [
+      'https://www.netcare.co.za/Investor-Relations/Financial-Reports',
+      'https://www.netcare.co.za/Investor-Relations/Annual-Report',
+    ],
+    'LHC': [
+      'https://www.lifehealthcare.co.za/investors/annual-reports/',
+      'https://www.lifehealthcare.co.za/investors/results/',
+    ],
+    // Industrials ─────────────────────────────────────────────
+    'BAW': [
+      'https://www.barloworld.com/investors/annual-reports/',
+      'https://www.barloworld.com/investors/results-presentations/',
+    ],
+    // Telecom ─────────────────────────────────────────────────
+    'TKG': [
+      'https://www.telkom.co.za/ir/annual-report/',
+      'https://www.telkom.co.za/ir/results/',
+    ],
+    // Media / Tech ────────────────────────────────────────────
+    'MCG': [
+      'https://www.multichoicegroup.com/investor-relations/results-presentations/',
+      'https://www.multichoicegroup.com/investor-relations/annual-report/',
+    ],
   };
 
   const urls = verifiedIRPages[ticker];
