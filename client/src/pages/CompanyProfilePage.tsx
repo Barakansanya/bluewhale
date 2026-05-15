@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/MainLayout';
 import CompanyReports from '../components/CompanyReports';
+import FinancialsTab from '../components/FinancialsTab';
 import {
   ArrowUpRight, ArrowDownRight, Star, StarOff,
   Globe, Building2, BarChart2, TrendingUp,
@@ -103,7 +104,7 @@ export default function CompanyProfilePage() {
   const [inWatchlist,      setInWatchlist]      = useState(false);
   const [watchlistItemId,  setWatchlistItemId]  = useState<string | null>(null);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
-  const [activeTab,        setActiveTab]        = useState<'overview' | 'news' | 'reports'>('overview');
+  const [activeTab,        setActiveTab]        = useState<'overview' | 'news' | 'reports' | 'financials'>('overview');
   const [lastUpdated,      setLastUpdated]      = useState<Date | null>(null);
 
   const fetchCompany = useCallback(async () => {

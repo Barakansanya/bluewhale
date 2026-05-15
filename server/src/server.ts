@@ -11,6 +11,7 @@ import { startSyncCron } from './jobs/syncCron';
 import { startScraperCron } from './jobs/scraper.cron';
 import { startReportScraperJob } from './jobs/reportScraper.job';
 import { seedCompaniesIfEmpty } from './services/sync.service';
+import { startFinancialsJob } from './jobs/financials.job';
 
 const PORT = env.PORT || 5000;
 
@@ -25,6 +26,7 @@ async function startServer() {
     startSyncCron();
     startScraperCron();
     startReportScraperJob();
+    startFinancialsJob();
 
     app.listen(PORT, () => {
       console.log(`\n🚀 BlueWhale API running on http://localhost:${PORT}`);

@@ -14,6 +14,7 @@ import reportsRoutes from './routes/reports.routes';
 import aiRoutes from './routes/ai.routes';
 import scraperRoutes from './routes/scraper.routes';
 import { errorHandler } from './middleware/errorHandler.middleware';
+import financialsRoutes from './routes/financials.routes';
 
 const app = express();
 app.use('/', healthRoute);
@@ -63,6 +64,7 @@ app.use('/api/v1/watchlist', watchlistRoutes);
 app.use('/api/v1/sync', syncRoutes);
 app.use('/api/v1/reports', reportsRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/financials', financialsRoutes);
 app.use('/api/v1/scraper', scraperRoutes);
 
 // Error handler (must be last)
